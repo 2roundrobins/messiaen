@@ -1,0 +1,244 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 AndaleMono;\f1\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww19780\viewh16260\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+
+\f0\fs24 \cf0 ------------devlogs-----------------\
+\'a0\
+DevLog 19.7.23\
+\'a0\
+-\'a0\'a0 Managed to get the GUI sorted somewhat (at least for the test)\
+-\'a0\'a0 It sounds absolutely rubbish (still havent figured out the birds yet)\
+-\'a0\'a0 E1 is now pre_level control not choose a bird\
+-\'a0\'a0 Dunno about start and stop of loop (needs work)\
+Issues:\
+-\'a0\'a0 If the robin function is still running and you toggle pre level it takes it in...seriously think if you can toggle whatever you have in recorded to go to buffer 2 and then to go from that. \
+-\'a0\'a0 Maybe it should be better for the birdsong to be in buffer 2, this way you can still have the loop playing normally in the background\
+\'a0\
+\'a0\
+Todo;\
+-\'a0\'a0 Start and stop (make it more free, now its literally stopping at 2 and going beyond end)\
+-\'a0\'a0 Figure out at least one bird (even if you have to transcribe it by ear)\
+-\'a0\'a0 Make a \'bbwhile true do\'ab loop so it actually runs constantly --- duno about this anymore\
+-\'a0\'a0 Think about how you can put rests in a table\
+\'a0\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 ------------devlogs-----------------\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 \'a0\
+DevLog 24.7.23\
+\'a0\
+-\'a0\'a0 Spend some time testing stuff out and managed to improve absolutely nothing\
+-\'a0\'a0 Later in the day managed to get so it behaves in this way;\
+o\'a0\'a0 You first record audio to buffer\
+o\'a0\'a0 You can trim it down\
+o\'a0\'a0 Play the bird\
+o\'a0\'a0 And still be able to play and jam while the bird plays\
+\'a0\
+\'a0\
+K3: acts as a record button (still dodgy)\
+K2: activates the bird\
+E2 and E3 sets the recorded loop\
+-\'a0\'a0 the buffer is now a bit quieter which is nice\
+\'a0\
+\'a0\
+Issues:\
+-\'a0\'a0 I want to make so when I have something in the buffer 1 when having the PRE on 1. The direct audio should be then routed to a different buffer. So I can play under the audio. (this was solved...somewhat)\
+\'a0\
+-\'a0\'a0 Captured audio in the buffer 1 should be coppied into buffer 2 and played by the bird ratio**(maybe at later dates)\
+\'a0\
+-\'a0\'a0 The recording is a bit dodgy, probably as I want it to remain in TOGGLE MODE, but at the same time I dont want to overdub when I play.\
+\'a0\
+\'a0\
+Todo;\
+-\'a0\'a0 Check out what is to do with the dodgy recording (look into overdubbing in docs)\
+-\'a0\'a0 Make filters\
+-\'a0\'a0 Make the sequence a bit more musical (think about bird musicallity)\
+-\'a0\'a0 Figure out at least one bird (even if you have to transcribe it by ear)\
+-\'a0\'a0 Make a \'bbwhile true do\'ab loop so it actually runs constantly --- duno about this anymore\
+-\'a0\'a0 Think about how you can put rests in a table
+\f1 \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0 \cf0 ------------devlogs-----------------\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 DevLog 25.7.23\
+\'a0\
+- used a bit of help from Chat GPT for making tables with rests. Managed to do another function and put a Nightingale pattern in. \
+- put a filter cuttoff on the captured audio\
+- made the loop a bit shorter\'85and even shorter is probably advisable. Idea is now to play capture a moment and and let that loose through the bird functions\
+- made an autopan \
+\
+I\
+Issues: (still to be resolved)\
+-\'a0\'a0 I want to make so when I have something in the buffer 1 when having the PRE on 1. The direct audio should be then routed to a different buffer. So I can play under the audio. (this was solved...somewhat)\
+\'a0\
+-\'a0\'a0 Captured audio in the buffer 1 should be coppied into buffer 2 and played by the bird ratio**(maybe at later dates)\
+\'a0\
+-\'a0\'a0 The recording is a bit dodgy, probably as I want it to remain in TOGGLE MODE, but at the same time I dont want to overdub when I play.\
+\
+Todo;\
+-\'a0\'a0 Check out what is to do with the dodgy recording (look into overdubbing in docs)\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+
+\f1 \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0 \cf0 ------------devlogs-----------------\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+\cf0 DevLog 26.7.23\
+\'a0\
+- short session\
+- managed to redistribute some things\
+E2 is now changing start and stop simultaniously by having a 0.10 gap, this lets you take only a smal portion and you can choose where this portion is and then let it run through the bird\
+E3 controls the level of the softcut\
+- it now records only a snippet\
+\
+Todo;\
+-\'a0\'a0 Check out what is to do with the dodgy recording (look into overdubbing in docs)\
+- make another bird and use enc3 to change the bird\
+\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 ------------devlogs-----------------\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+
+\f1 \cf0 \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+
+\f0 \cf0 DevLog 30.7.23\
+\'a0\
+- more birds were added (wren, redstart, blackbird, robin, song trush)\
+- these were taken from Olivier Meassien Les chants d'oiseaux du CATALOGUE D'OISEAUX d'Olivier Messiaen \
+- short calls with added pauses\
+- also added \'93good boi\'94 bird which is in tune. should be added to scale in future\
+- added weird bird with randomness\'85however it does not work yet\
+\
+ISSUES\
+- recording is still kinda shit and wobbly\
+- soundwise, maybe I can shape it to make it a bit more bird like with slew\
+- levels are still a bit over the place\
+\
+Todo;\
+-\'a0\'a0 Check out what is to do with the dodgy recording (look into overdubbing in docs)\
+- slew functions for randomized slew (level)\
+- sequence that changes birds randomly so you would have a choir of birds playing at the same time (K1 + K2)\
+- params ()\
+- good boi and weird boi should be synced to clock + scale based\
+- figure out whats wrong with weird boy\
+- check Les chants d'oiseaux du CATALOGUE D'OISEAUX d'Olivier Messiaen score to find some more calls\'a0\
+\
+\
+DevLog 3.8.23\
+\
+- added so it goes to reverb\
+- added another octave so it sounds more bird like\
+- added an ambient file to be played K1 toggle\
+- added an exclemation point to know when its recording\
+\
+ISSUES\
+- clock problems (dont know how to stop it - try using play note funciton)\
+- for now I have worked around with a long pause and a restart, each time K2 is pressed\
+\
+TO DO\
+- clock fixing (or not, maybe the pause is ok)\
+- song shaping (slew, video) \
+- parameters()\
+- change \
+\
+PARAMS\
+- need to put for filtering (low, hi)\
+- loop size change\
+- rev\
+- audio file change for ambience\
+- adding audio files from disk\
+- lfo (automating) - jumping from one bird to another\
+\
+\
+\
+FUTURE\
+- birds as packs? that you can load in params \
+- each bird in it\'92s own buffer \
+Buffers:\
+\
+\
+ASK\
+- clocks = i dont understand how to cancel them \
+key combo \
+K1 + K2 should cancel an active clock (where you are on the bird)\
+K1 + K3 should clear the buffer\
+- PARAMS. what exactly is ID? Is it global or what do I need to do so that norns doesnt scream each time I make a parameter\
+\
+\
+DevLog 7.8.2023\
+\
+- updates!\
+added libs;\
+- sequins and lattuce are added for running randomization of the birds (choir in the nest)\
+clocks;\
+- added each clock for bird (ids) so I can later cancel them when needed\
+tables;\
+- added bird tables where you can put new birds \'97 this looks for current_bird\
+functions;\
+- added rand_bird() uses the argument of active_bird which looks for value and randomizes value (we had to use this because of MATH.RANDOM function.\
+- added change_bird() which calls for changing the bird\
+\
+STRATEGY\
+the strategy now was that each bird gets;\
+- a string name for ex. \'93wren\'94 \
+- a value defined by active_bird (1, 2, 3)\
+- its own clock id (ids), this is then translated to to the key toggle function for K2 (starting and canceling the clock)\
+\
+TO DO\
+- add the randomization part for a key combo and params:delta it\
+- figure out the randomization of sequins\
+- try out a while true do loop for the birds and see if the clock cancel works as intended\
+- check for randomization of birdsong sequence, currently its just for wren. should be all. Maybe use if and elseif statements at the randomize function\
+- look into params! \
+\
+\
+DevLog 14.8.2023\
+\
+- added a couple of functions under the choir mode, so it should start all the clocks (but it doesn\'92t) and then it should cancel all the clocks. this also starts lattice and stops lattice. \
+- all the png files and audio have been moved to assets in the folder\
+- while true loops have been added to all the bird\
+\
+TO DO\
+- figure out why it doesnt start the all clocks and even when it stops it still bugs out\
+- connect this to a param set\
+- params!\
+\
+28.8.2023\
+- tried to make the transform work for bird songs as well, but had massive issues with trying to restart clock with each passing bird.\
+- created rando function which is basically a sort of copy/paste from the k2 function\
+\
+TO DO!\
+MAIN PROBLEM IS THAT RANDO() function is repeated meaning it always starts the clock you need to creat a cleaner way how to play the clock only when its active\
+\
+Maybe this is because rando () is called within the rand_bird() function. I need to figure out what exactly is going on, why its double speed. But my theory is that because it doesnt cancel the clocks but rahter adds to them so they start clashing. What I need to do is to create a function or something similar that would start the clock whenever it comes to a new bird, and cancel whatever clock the active bird is not shown. \
+- make a plan\
+- current / active bird\
+- draw it, maybe that will help\
+- simplify \
+\
+\
+\
+\
+\
+\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+
+\f1 \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+
+\f0 \cf0 \
+\'a0\
+\
+}
