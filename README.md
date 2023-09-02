@@ -1,8 +1,6 @@
 # massiaen BETA
  norns script based on birdsong
 
-<h1 align="center">NDLS</h1>
-
 single buffer delay / looper for mimicking birdsong
 
 
