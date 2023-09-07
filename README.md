@@ -1,10 +1,10 @@
-# massiaen BETA
+# massiaen BETA v0.1
  norns script based on birdsong
 
-<h1 align="center">NDLS</h1>
-
 single buffer delay / looper for mimicking birdsong
+this is far from finished and I intend to make this at least somewhat workable
 
+but here is what you need if you want to test;
 
 ## hardware
 
@@ -33,10 +33,14 @@ recommended: luanch the script from the norns [SELECT](https://monome.org/docs/n
 
 ## controls
 
-Use E1 to change the bird. E2 is the loop size and E3 is the loop volume. Please note that due to the mimicking phylosophy the loop size is microscopic. You can change the loop size in the PARAMs menu.
+### recording
 
-### listening and singing
+start by recording something into the buffer. do this by pressing K3 and you'll see that your birdie will get an exlamation mark - this mean the bird is listening. you can record a sound into it and press K3 again. doing this, you have now stored the sound. turn E3 and you will hear your verry short loop. you can also turn E2 to change the position of the micro loop. 
 
-By pressing K3 the bird will listen and is ready to record. Play something into it and press K3 again. Boost the volume and press K2. The bird will sing it's species song. 
+### playing
 
-5
+press K2 and the bird will start singing random song based on it's species. you can stop the playing by pressing K2 again. by moving E1 you can change the bird species and the birdsong. 
+
+### adding ambience
+
+by pressing K1 you can add "plant" a forest and put your bird in a habitat. you can also change the habitat in the PARAMs menu.
