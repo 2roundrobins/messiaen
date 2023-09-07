@@ -40,7 +40,7 @@ local sc = softcut
 local rec = 2
 local tog = 0
 local activate = 0
-local low = 17000
+local low = 1700
 local hi = 800
 local volume = 0
 local rev = 0.3
@@ -49,9 +49,6 @@ local display_exl = false
 local file_lenght = 170
 local isPlaying = false
 local active_bird = 1 -- active bird is strictly a VALUE as it is used in the rand_bird() functions
-local press_bird = 1
-
-local birds = 1
 
 
 --Key combos
@@ -60,7 +57,7 @@ local k2_pressed = false
 
 
 --files
-file = _path.code.."/massiaen/assets/forests/robinwren.wav"
+file = _path.code.."/01mystuff/01brd/robinwren.wav"
 
 --clock table for birds
 -- this is basically so it can be canceled by calling the function clock.cancel(ids[current_bird]) that is now hooked up to the Toggle of K2
@@ -78,7 +75,7 @@ ids["weird"] = clock.run
 --bird table
 -- here you can add it in the future as it is the current_bird
 --difference between current bird is that current bird looks for a STRING while active_bird looks for a VALUE
-birds = {"wren", "robin", "trush", "nightingale", "blackbird", "redstart"}
+birds = {"wren", "robin", "blackbird", "trush", "redstart", "nightingale"}
 
 --sequins 
 pat1_div_seq = s{1/1,1/1} -- how quickly will the bird change, currently the only one active
@@ -143,29 +140,8 @@ function init()
   --other init
   init_lattice()
   --lat:start()
-  
---PARAMS
---filt
---params:add_separator("cave", "cave")
-params:add_control("cutoff", "cutoff", controlspec.new(20, 20000, 'exp', 0, 17000, "Hz"))
-params:set_action("cutoff", function(x) softcut.pre_filter_fc(2, x) end)
-
-params:add_separator("chirp_material", "chirp material")
-params:add_control("loop_start", "loop start", controlspec.new(0, loop_end, 'lin', 0.01, 0, "sec")) -- I'll need to add params:delta 
-params:set_action("loop_start", function(x) softcut.loop_start(1, x) end)
-params:add_control("loop_end", "loop end", controlspec.new(loop_start, 4.1, 'lin', 0.01, loop_end, "sec"))
-params:set_action("loop_end", function(x) softcut.loop_end(1, x) end)
-
-
---params:bang()
-
-
 
 end
-
-
-
-
 
 
 -- BIRDS
@@ -459,7 +435,7 @@ function play_notes(table)
       local rate = ntor(current_note.rate) * 3
       sc.rate(1, rate)
       clock.sleep(current_note.duration)
-      --print(i)
+      print(i)
     end
   end
 
@@ -653,12 +629,10 @@ function key(n, z)
         display_exl = false
       elseif current_bird == "awesomebird" then
         ids["awesomebird"] = clock.run(awesome_song_as)
-        display_note = true
         display_exl = false
         --clock.run(awesomebird_song)
       elseif current_bird == "weird" then
-        id["weird"] = clock.run(weird_bird)
-        display_note = true
+        id["weird"] = clock.run(current_bird)
         display_exl = false
     end
       else
@@ -706,111 +680,131 @@ function key(n, z)
     end
 end
 
--- TRANSFORM ---- TRANSFORM --
--- TRANSFORM ---- TRANSFORM --
--- random function meant transform the bird ndomly changing the birds 
+-- CHOIR ---- CHOIR ---- CHOIR --
+-- CHOIR ---- CHOIR ---- CHOIR --
+-- random function meant to create a choir by randomly changing the birds 
 -- active_bird is a variable and therefore the math.random is searching for these variables for the lenght of the birds table (#birds)
 -- brd_change is a variable that starts with our default bird (wren) and then is based on whatever the next active_bird is 
 -- this is then used in the redraw function and the encoder function
 
 
-function transform() -- this will be the TRANSFORM funciton
-  lat:start() -- starts the sequence
-  rand_bird() -- calls for a function
+function all() -- starts all the clocks...but doesn't?
+  lat:start()
+  rand_bird()
 end
   
-function rand_bird()
-    active_bird = math.random(#birds) -- randomly changes the variable of active_bird
-    brd_change = birds[active_bird]  -- corresponds the current_bird to the active_bird variable
-    
-    rando() -- calls for a function where it starts the clock based on current bird
-    change_bird() -- calls for a function where it connects active_bird,current_bird to bird_name
-    
+function rand_bird() -- choses a random bird
+    active_bird = math.random(#birds)
+    brd_change = birds[active_bird]
+    change_bird()
     redraw()
 end
   
+--------------------------------------  
+function random_play()
+  if current_bird == current_bird then
+      --ids[current_bird] = clock.run(current_bird)
+      clock.run(wren_song_as)
+      print("play")
+  elseif active_bird ~= active_bird then
+    clock.cancel(ids)
+    print("cancel")
+  end
+  redraw()
+end
+--------------------------------------
 
 function rando()
   if current_bird == "wren" then
-        active_bird = 1
         ids["wren"] = clock.run(wren_song_as)
         display_note = true
         display_exl = false
-        
-  --[[--elseif current_bird ~= "wren" then
-        clock.cancel(active_bird)
-        print ("wren CANCEL")]] -------trying to solve the canceling of clocks!
-      
-  elseif current_bird == "robin" then
-        active_bird = 6
+  elseif current_bird ~= "wren" then
+        clock.cancel(ids["wren"])
+      elseif current_bird == "robin" then
         ids["robin"] = clock.run(robin_song_as)
         display_note = true
         display_exl = false
-        
---[[--elseif current_bird ~= "robin" and active_bird ~= 6 then
-      clock.cancel(active_bird + 6)
-      print ("robin CANCEL")]]
-    
-    
+        elseif current_bird ~= "robin" then
+      clock.cancel(ids["robin"])
       elseif current_bird == "trush" then
         ids["trush"] = clock.run(trush_song_as)
         display_note = true
         display_exl = false
+        elseif current_bird ~= "trush" then
+      clock.cancel(ids["trush"])
       elseif current_bird == "redstart" then
         ids["redstart"] = clock.run(redstart_song_as)
         display_note = true
         display_exl = false
+        elseif current_bird ~= "redstart" then
+      clock.cancel(ids["redstart"])
       elseif current_bird == "blackbird" then
         ids["blackbird"] = clock.run(blackbird_song_as)
         display_note = true
         display_exl = false
-      print ("blackbird CANCEL")
+        elseif current_bird ~= "blackbird" then
+      clock.cancel(ids["blackbird"])
       elseif current_bird == "nightingale" then
          ids["nightingale"] = clock.run(nightingale_song_as)
         display_note = true
         display_exl = false
+        elseif current_bird ~= "nightingale" then
+      clock.cancel(ids["nightingale"])
+    elseif current_bird ~= current_bird then
+      clock.cancel(ids["nightingale"])
     end
 end
-
--- function for changing the bird
-  -- the function looks for the argument "brd_name" so it looks what arguments occupies and then changes it to that argument
-  function change_bird(brd_name)
-      if brd_name == "wren" then
-        current_bird = "wren"
-        active_bird = 1
-      elseif brd_name == "robin" then
-        current_bird = "robin"
-         active_bird = 2
-       elseif brd_name == "trush" then
-        current_bird = "trush"
-         active_bird = 3
-        elseif brd_name == "nightingale" then
-        current_bird = "nigtingale"
-         active_bird = 4
-        elseif brd_name == "blackbird" then
-        current_bird = "blackbird"
-         active_bird = 5
-        elseif brd_name == "redstart" then
-        current_bird = "redstart"
-         active_bird = 6
-      end
-    redraw()
-    end
     
+
+
 function cancel_all() -- stops the sequence and clocks
   clock.cancel(active_bird)
   lat:stop()
 end
 
-
---UNUSED--
---[[function away() -- whatever the current bird is  #birds it will cancel the clock using the ids
+function away() -- whatever the current bird is  #birds it will cancecl the clock using the ids
   if play_bird == 1 then
     play_bird = 1
     elseif current_bird == current_bird then
     clock.cancel(ids[current_bird])
   end
-end]]
+end
+
+
+  -- function for changing the bird
+  -- the function looks for the argument "brd_name" so it looks what arguments occupies and then changes it to that argument
+  function change_bird(brd_name)
+      if brd_name == "wren" then
+        current_bird = "wren"
+        active_bird = 1
+      elseif brd_name == "blackbird" then
+        current_bird = "blackbird"
+         active_bird = 2
+       elseif brd_name == "nightingale" then
+        current_bird = "nightingale"
+         active_bird = 3
+        elseif brd_name == "redstart" then
+        current_bird = "redstart"
+         active_bird = 4
+        elseif brd_name == "trush" then
+        current_bird = "trush"
+         active_bird = 5
+        elseif brd_name == "robin" then
+        current_bird = "robin"
+         active_bird = 6
+        elseif brd_name == "blackbird" then
+        current_bird = "blackbird"
+         active_bird = 7
+       -- elseif brd_name == "awesomebird" then
+        --current_bird = "awesomebird"
+        --active_bird = 8 
+        --elseif brd_name == "weird" then
+        --current_bird = "weird"
+         --active_bird = 9
+      end
+    redraw()
+    end
     
   -- LATTICE 
   -- function to start the lattice occupied by one sprocket which calls for the function rand_bird() and sets the division of change
@@ -832,7 +826,6 @@ end]]
     
   end
   
-------------------------------------------------------------------------------------------
 
 -- GUI
 function redraw()
@@ -897,8 +890,46 @@ function redraw()
 end
 
 
+--PARAMS
+--BEWARE!!! only as proof of concept!
+--must do a redo! otherwise shit might get fucked up when updating norns!!!
+params:add_separator("bird_control", "bird control")
 
-------------------------------------------------------------------------------------
+--filt
+params:add_separator("cave", "cave")
+params:add_control("cutoff", "filter cutoff", controlspec.new(20, 20000, 'exp', 0, 17000, "Hz"))
+params:set_action("cutoff", function(x) softcut.pre_filter_fc(1, x) end)
+params:add_control("level_eng_cut", "reverb", controlspec.new(0, 1, 'lin', 0, rev, "db"))
+params:set_action("level_eng_cut", function(x) audio.level_eng_cut(rev) end)
+--loopsize
+params:add_separator("chirp_material", "chirp material")
+params:add_control("loop_start", "loop start", controlspec.new(0, 4, 'lin', 0.01, 0, "sec")) -- I'll need to add params:delta 
+params:set_action("loop_start", function(x) softcut.loop_start(1, x) params:set("loop_end", loop_start + loop_end) end)
 
+params:add_control("loop_end", "loop end", controlspec.new(0.1, 4.1, 'lin', 0.01, 0.02, "sec"))
+params:set_action("loop_end", function(x) softcut.loop_end(1, x) end)
+--ambience
+params:add_separator("forest", "forest")
+params:add_file("append_file", ">> plant forest", "")
+params:set_action("append_file", function(path) load_splice(path) end) -- must add function to load file
+params:add_control("level", "level", controlspec.new(0, 1, 'lin', 0.1, 0.5, "db")) -- I'll need to add params:delta 
+params:set_action("level", function(x) softcut.level(2, x) end)
+params:add_control("cutoff", "filter cutoff", controlspec.new(20, 20000, 'exp', 0, 20000, "Hz"))
+params:set_action("cutoff", function(x) softcut.pre_filter_fc(2, x) end)
 
-
+params:add_separator("bird", "bird")
+params:add_option("current_bird", "current bird", {"wren", "blackbird", "nightin gale", "robin", "song trush", "awesome boi", "weird boi"}, 1)
+--need to set action!!!
+params:add_group("birds_params", "nest", 11)
+params:add_separator("bird", "bird")
+params:add_option("wren", "wren", {"yes", "no"}, 1)
+params:add_option("blackbird", "blackbird", {"yes", "no"}, 1)
+params:add_option("nightin gale", "nightin gale", {"yes", "no"}, 1)
+params:add_option("robin", "robin", {"yes", "no"}, 1)
+params:add_option("song trush", "song trush", {"yes", "no"}, 1)
+params:add_option("awesome boi", "awesome boi", {"yes", "no"}, 1)
+params:add_option("wierd boi", "weird boi", {"yes", "no"}, 1)
+--choir options
+params:add_separator("choir", "choir")
+params:add_option("bird_choir", "choir", {"yes", "no"}, 1)
+params:add_control("change_duration", "time", controlspec.new(0, 2, 'lin', 0.01, 0.0, "sec"))
