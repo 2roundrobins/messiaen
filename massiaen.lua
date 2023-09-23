@@ -27,42 +27,60 @@
 Lattice = require ("lattice") -- clock for the randomization paterning 
 s = require("sequins") -- the sequence at which the randomization changes
 
--- VARIABLES
-local play_bird = 1
-local freeze = 0.3
-local loop_start = 0
-local loop_end = 0.02
-local slew = 0.1
-local pan_aut = false
-local pos = 1
-local brd_change = "wren" -- default, so it always start on wren
-local sc = softcut
-local rec = 2
-local tog = 0
-local activate = 0
-local low = 17000
-local hi = 800
-local volume = 0
-local rev = 0.3
-local display_note = false 
-local display_exl = false
-local file_lenght = 170
-local isPlaying = false
-local active_bird = 1 -- active bird is strictly a VALUE as it is used in the rand_bird() functions
-local press_bird = 1
+--include ("lib/birds")
 
-local birds = 1
+-------- VARIABLES --------
 
-
---Key combos
 local k1_pressed = false
-local k2_pressed = false
+
+---table variables
+rate = r
+duration = d
+level = l
+pitch_bend = pb
+
+-- bird variables
+bird_is_singing = false -- replaces play_bird
+bird_voice = 1 -- softcut voice 1
+bird_level = 0
+bird_pan = 0
+bird_cutoff = 18000
+bird_filter_q = 4
+active_bird = 1 -- active bird is strictly a VALUE as it is used in the rand_bird() functions
+brd_change = "wren" -- default, so it always start on wren
+active_loop = false
+
+-- forest variables
+forest_voice = 6 -- softcut voice 2
+forest_level = 0
+forest_is_planted = false
+garden_is_planted = false
+
+-- sofutcut varables
+is_recording = false
+dub_level = 0.3
+loop_start = 1
+loop_end = loop_start + 0.01
+level_slew = 0.2
+pan_slew = 0.2
+rate_slew = 0.1
+fade_time = 0.2
+MAX_LOOP = 4 -- max loop length
+MAX_BUFFER = 350 -- max length of softcut buffer
+
+pan_aut = false -- might use this later on?
+
+-- UI variables
+display_note = false 
+display_exl = false
+
+k1_pressed = false
+k2_pressed = false
 
 
---files
-file = _path.code.."/massiaen/assets/forests/robinwren.wav"
+garden = false
 
---clock table for birds
+-- clock table for birds
 -- this is basically so it can be canceled by calling the function clock.cancel(ids[current_bird]) that is now hooked up to the Toggle of K2
 ids = {}
 ids["wren"] = clock.run
@@ -70,347 +88,636 @@ ids["robin"]= clock.run
 ids["trush"] = clock.run
 ids["nightingale"] = clock.run
 ids["blackbird"] = clock.run
-ids["redstart"] = clock.run
+ids["finch"] = clock.run
+ids["great tit"] = clock.run
 ids["awesomebird"] = clock.run
 ids["weird"] = clock.run
 
+-- transform
+transform_party = false
 
---bird table
+
+-------- TABLES --------
+
+-- bird table
 -- here you can add it in the future as it is the current_bird
---difference between current bird is that current bird looks for a STRING while active_bird looks for a VALUE
-birds = {"wren", "robin", "trush", "nightingale", "blackbird", "redstart"}
+-- difference between current bird is that current bird looks for a STRING while active_bird looks for a VALUE
+birds = {"wren", "robin", "trush", "nightingale", "blackbird", "finch", "great tit"}
 
---sequins 
+-- sequins 
 pat1_div_seq = s{1/1,1/1} -- how quickly will the bird change, currently the only one active
---pat2_div_seq = s{1/4,1/8,1/2}
---pat2_rate_seq = s{4,-4,2,-2,s{4,3,2,1,-1,-2,-3,-4}}
+-- pat2_div_seq = s{1/4,1/8,1/2}
+-- pat2_rate_seq = s{4,-4,2,-2,s{4,3,2,1,-1,-2,-3,-4}}
 
--- Init
+-------- FUNCTIONS --------
+
+-- function for changing the bird
+  -- the function looks for the argument "brd_name" so it looks what arguments occupies and then changes it to that argument
+function change_bird(brd_name)
+  if brd_name == "wren" then
+    current_bird = "wren"
+    active_bird = 1
+  elseif brd_name == "robin" then
+    current_bird = "robin"
+      active_bird = 2
+    elseif brd_name == "trush" then
+    current_bird = "trush"
+      active_bird = 3
+    elseif brd_name == "nightingale" then
+    current_bird = "nightingale"
+      active_bird = 4
+    elseif brd_name == "blackbird" then
+    current_bird = "blackbird"
+      active_bird = 5
+    elseif brd_name == "finch" then
+    current_bird = "finch"
+      active_bird = 6
+    elseif brd_name == "great tit" then
+    current_bird = "great tit"
+      active_bird = 7
+  end
+  dirtyscreen = true
+end
+    
+
+-- load forest file
+function load_audio(path)
+  if path ~= "cancel" and path ~= "" then
+    local ch, len = audio.file_info(path)
+    if ch > 0 and len > 0 then
+      --filename_forest = path
+      softcut.buffer_clear_channel(2)
+      softcut.buffer_read_mono(path, 0, 1, -1, 1, 2, 0, 1)
+      --softcut.buffer_read_mono(file, start_src, start_dst, dur, ch_src, ch_dst)
+      local l = math.min(len / 48000, MAX_BUFFER) -- can you explain this to me please, why 48000? because of the sample rate?
+      -- plant forest
+      softcut.loop_start(forest_voice, 1)
+      softcut.loop_end(forest_voice, 1 + l)
+      params:set("plant_forest", 2) -- set forest to yes when loading -> automatically toggles playback
+      print("file loaded: "..path.." is "..l.."s")
+    else
+      print("not a sound file")
+    end
+  end
+end
+
+function toggle_forest()
+  if forest_is_planted then
+    softcut.position(forest_voice, 1)
+    softcut.play(forest_voice, 1)
+    softcut.level(forest_voice, forest_level)
+  else
+    softcut.level(forest_voice, 0)
+  end
+end
+
+-- garden
+function toggle_garden()
+  if garden_is_planted then
+  garden = true
+  populate()
+  else
+  garden = false
+  dirtyscreen = true
+  end
+end
+
+
+function populate()
+    -- Initialize stage
+    print ("they are coming")
+    softcut.buffer_clear()
+    if bird_is_singing and active_loop then
+      clock.cancel(ids[current_bird])
+    -- Set up the softcut playheads (5)
+    for i = 1, 5 do 
+        softcut.enable(i, 1)
+        softcut.buffer(i, 1)
+        softcut.level(i, 0)
+        softcut.rate(i, 1.0)
+        softcut.loop(i, 1)
+        softcut.loop_start(i, 1)
+        softcut.loop_end(i, 5)
+        softcut.position(i, 1)
+        softcut.play(i, 1)
+        softcut.fade_time(i, fade_time)  -- Use 'i' as the softcut index
+        
+        -- Slew
+        softcut.level_slew_time(i, level_slew)
+        softcut.pan_slew_time(i, pan_slew)
+        softcut.rate_slew_time(i, rate_slew)
+        
+        -- Pan
+        softcut.pan(i, bird_pan)
+        
+        -- Filter
+        softcut.post_filter_dry(i, 0)
+        softcut.post_filter_lp(i, 1)
+        softcut.post_filter_fc(i, bird_cutoff)
+        softcut.post_filter_rq(i, bird_filter_q)
+        
+        -- Get the selected bird from params
+        local chosenBirdIndex = params:get("choir")
+        local chosenBird = birds[chosenBirdIndex]
+        print("Chosen Bird: " .. chosenBird .. sc.buffer)
+        end
+    end
+end
+
+
+
+function toggle_active_loop()
+  if active_loop then
+    bird_is_singing = not bird_is_singing
+    softcut.play(bird_voice, 1)
+    softcut.level(bird_voice, bird_level)
+  else
+    softcut.level(bird_voice, 0)
+  end
+end
+
+-- set loop points
+function set_loop()
+  local s = params:get("loop_start")
+  local l = params:get("loop_size")
+  -- set and clamp loop start
+  loop_start = util.clamp(s, 0, MAX_LOOP - l)
+  if loop_start >= MAX_LOOP - l then
+    params:set("loop_start", MAX_LOOP - l)
+  end
+  -- set and clamp loop end
+  local size = loop_end - loop_start
+  loop_end = util.clamp(loop_start + l, loop_start + 0.01, MAX_LOOP)
+  if loop_end >= MAX_LOOP then
+    params:set("loop_start", MAX_LOOP - size)
+  end
+  -- set softcut
+  softcut.loop_start(bird_voice, loop_start + 1)
+  softcut.loop_end(bird_voice, loop_end + 1)
+  -- debug
+  print("Loop size:", size)
+  print("Loop start:", loop_start)
+  print("Loop end:", loop_end)
+end
+
+function set_bird_level()
+  if bird_is_singing then
+    softcut.level(bird_voice, bird_level)
+  else
+    softcut.level(bird_voice, 0)
+  end
+end
+
+
+-- init function
 function init()
   softcut.buffer_clear()
-  softcut.enable(1, 1)
-  softcut.buffer(1, 1)
-  softcut.level(1, 0)
-  softcut.rate(1, 1.0)
-  softcut.loop(1, 1)
-  softcut.loop_start(1, loop_start)
-  softcut.loop_end(1, loop_end)
-  softcut.position(1, 0)
-  softcut.play(1, 1)
-  softcut.fade_time(1, 0.2)
-  
-  --SLEW
-  sc.rate_slew_time (1, slew)
-  
-  --PAN
-  sc.pan(1, 0)
-  
-  --FILTERS
-  softcut.pre_filter_dry(1,0.0)
-  softcut.pre_filter_lp(1,1.0)
-  softcut.pre_filter_fc(1,low)
-  softcut.pre_filter_rq(1,10)
-
---AUDIO IN
+  softcut.enable(bird_voice, 1) -- playhead 1 is on
+  softcut.buffer(bird_voice, 1) -- playhead 1 plays on buffer 1
+  softcut.level(bird_voice, 0)
+  softcut.rate(bird_voice, 1.0)
+  softcut.loop(bird_voice, 1)
+  softcut.loop_start(bird_voice, 1)
+  softcut.loop_end(bird_voice, 5)
+  softcut.position(bird_voice, 1)
+  softcut.play(bird_voice, 1)
+  softcut.fade_time(bird_voice, fade_time)
+  -- slew
+  softcut.level_slew_time(bird_voice, level_slew)
+  softcut.pan_slew_time(bird_voice, pan_slew)
+  softcut.rate_slew_time(bird_voice, rate_slew)
+  -- pan
+  softcut.pan(bird_voice, bird_pan)
+  -- filter
+  softcut.post_filter_dry(bird_voice, 0)
+  softcut.post_filter_lp(bird_voice, 1)
+  softcut.post_filter_fc(bird_voice, bird_cutoff)
+  softcut.post_filter_rq(bird_voice, bird_filter_q)
+  -- audio routings
   audio.level_adc_cut(1)
-  softcut.level_input_cut(1, 1, 1.0)
-  softcut.level_input_cut(2, 1, 1.0)
-  
---SC RECORD
-  softcut.rec_level(1, rec)
-  softcut.pre_level(1, freeze)
-  softcut.rec(1, 0)
-  
-  -- eng
-  audio.level_eng_cut(rev)
+  audio.level_eng_cut(1)
   audio.level_tape_cut(0)
-  
-  
-  --playback buffer
-  softcut.buffer_clear()
-  softcut.enable(2, 1)
-  softcut.buffer(2, 1)
-  softcut.level(2, 0.1)
-  softcut.rate(2, 1)
-  softcut.loop(2, 1)
-  softcut.loop_start(2, 0)
-  softcut.loop_end(2, file_lenght)
-  softcut.position(2, 1)
-  softcut.play(2, 0)
-  softcut.fade_time(2, 2)
-  softcut.buffer_read_stereo(file, 0,1,-1,2,2)
+  softcut.level_input_cut(1, bird_voice, 1.0)
+  softcut.level_input_cut(2, bird_voice, 1.0)
+  -- softcut recording
+  softcut.rec_level(bird_voice, 0)
+  softcut.pre_level(bird_voice, 1)
+  softcut.rec(bird_voice, 1)
+  -- forest playback
+  softcut.enable(forest_voice, 1) 
+  softcut.buffer(forest_voice, 2)
+  softcut.level(forest_voice, 0.1)
+  softcut.rate(forest_voice, 1)
+  softcut.loop(forest_voice, 1)
+  softcut.loop_start(forest_voice, 0)
+  softcut.loop_end(forest_voice, MAX_BUFFER)
+  softcut.position(forest_voice, 1)
+  softcut.play(forest_voice, 0)
+  softcut.fade_time(forest_voice, 2)
   
   --other init
   init_lattice()
   --lat:start()
   
---PARAMS
---filt
---params:add_separator("cave", "cave")
-params:add_control("cutoff", "cutoff", controlspec.new(20, 20000, 'exp', 0, 17000, "Hz"))
-params:set_action("cutoff", function(x) softcut.pre_filter_fc(2, x) end)
+  -- PARAMETERS
 
-params:add_separator("chirp_material", "chirp material")
-params:add_control("loop_start", "loop start", controlspec.new(0, loop_end, 'lin', 0.01, 0, "sec")) -- I'll need to add params:delta 
-params:set_action("loop_start", function(x) softcut.loop_start(1, x) end)
-params:add_control("loop_end", "loop end", controlspec.new(loop_start, 4.1, 'lin', 0.01, loop_end, "sec"))
-params:set_action("loop_end", function(x) softcut.loop_end(1, x) end)
+  -- bird voice params
+  params:add_separator("bird_voicing", "bird voice")
+  
+  params:add_option("chosen_bird", "chosen bird", birds, active_bird)
+  params:set_action("chosen_bird", function (val) change_bird(active_bird) brd_change = birds[val] dirtyscreen = true end)
+
+  params:add_control("bird_level", "level", controlspec.new(0, 1, 'lin', 0, 0, ""))
+  params:set_action("bird_level", function(val) bird_level = val set_bird_level() dirtyscreen = true end)
+
+  params:add_control("bird_pan", "pan", controlspec.new(-1, 1, 'lin', 0, 0, ""))
+  params:set_action("bird_pan", function(val) bird_pan = val softcut.pan(bird_voice, val) end)
+
+  params:add_control("cutoff", "cutoff", controlspec.new(20, 20000, 'exp', 0, 17000, "Hz"))
+  params:set_action("cutoff", function(x) softcut.post_filter_fc(bird_voice, x) end)
+
+  -- set loop
+  params:add_separator("chirp_material", "chirp material")
+
+  params:add_option("loop_active", "seed audiable?", {"no", "yes"}, 1)
+  params:set_action("loop_active", function(val) active_loop = val == 2 and true or false toggle_active_loop() end)
+
+  params:add_control("loop_start", "loop start", controlspec.new(0, MAX_LOOP - 0.01, 'lin', 0.01, 0, "s"))
+  params:set_action("loop_start", function() set_loop() dirtyscreen = true end)
+
+  params:add_control("loop_size", "loop size", controlspec.new(0.01, MAX_LOOP, 'lin', 0.01, 0.01, "s"))
+  params:set_action("loop_size", function() set_loop() end)
+
+  -- transform
+  params:add_separator("transform birds")
+  
+  params:add_option("transform", "start the party?", {"no", "yes"}, 1)
+  params:set_action("transform", function(val) transform_party = val == 2 and true or false transform() end)
+  
+  
+  -- create garden
+  params:add_separator("garden")
+  params:add_group("choir", "bird choir", 5)
+  for i = 1, 5 do
+    params:add_option("choir", "friendly visitor "..i, birds, active_bird, 1)
+  end
+   params:add_option("summon_birds", "attract?", {"no", "yes"}, 1)
+   params:set_action("summon_birds", function(val) garden_is_planted = val == 2 and true or false toggle_garden() end)
+  
+  -- add forest
+  params:add_separator("forest_params", "plant forest")
+  params:add_file("load_forest", "> load forest", "")
+  params:set_action("load_forest", function(path) load_audio(path) end)
+
+  params:add_option("plant_forest", "plant forest", {"no", "yes"}, 1)
+  params:set_action("plant_forest", function(val) forest_is_planted = val == 2 and true or false toggle_forest() end)
+
+  params:add_control("forest_level", "level", controlspec.new(0, 1, 'lin', 0, 1, ""))
+  params:set_action("forest_level", function(val) forest_level = val softcut.level(forest_voice, val) end)
+  
+  
+  --add info
+  --params:add_separator("bird_info", "bird info")
+  --params:add_text("bird_info", "great tit", "great tit is a cool looking bird")
 
 
---params:bang()
 
+  params:bang()
 
+  -- metros
+  screenredrawtimer = metro.init(function() screen_redraw() end, 1/15, -1)
+  screenredrawtimer:start()
 
 end
 
-
-
-
+-------- UTILITIES --------
+function screen_redraw()
+  if dirtyscreen then
+    redraw()
+    dirtyscreen = false
+  end
+end
 
 
 -- BIRDS
--- Bird song transcription with duration
+-- Bird song transcription with duration -- // bird tables can be broken out into a lib.
 
 --NIGHTING GALE
-gale_as1 = {
-  {rate = 1, duration = 0.20},--eight
-  {rate = 12, duration = 0.83},--half  
-  {rate = 7, duration = 0.10}, --sixteen  
-  {rate = 8, duration = 0.20}, 
-  {rate = 1, duration = 0.20},
-  {rate = 12, duration =  0.83},
-  {rate = 7, duration = 0.10},
-  {rate = 8, duration = 0.10},
-  {rate = 10, duration = 0.83},
-  {rate = (1)/2, duration = 0.20}
+gale_1 = {
+  {r = 1, d = 0.20},--eight
+  {r = 12, d = 0.83},--half  
+  {r = 7, d = 0.10}, --sixteen  
+  {r = 8, d = 0.20}, 
+  {r = 1, d = 0.20},
+  {r = 12, d =  0.83},
+  {r = 7, d = 0.10},
+  {r = 8, d = 0.10},
+  {r = 10, d = 0.83},
+  {r = (1)/2, d = 0.20}
 }
 
 --EUROPEAN ROBIN
-robin_as1 = {
-  {rate = 19, duration = 0.105},
-  {rate = 17, duration = 0.105},
-  {rate = 14, duration = 0.105},
-  {rate = 12, duration = 0.105},
-  {rate = 9, duration = 0.105},
-  {rate = 7, duration = 0.105},
-  {rate = 5, duration = 0.105},
-  {rate = 2, duration = 0.105},
-  {rate = 1, duration = 0.215},
+robin_1 = {
+  {r = 19, d = 0.105},
+  {r = 17, d = 0.105},
+  {r = 14, d = 0.105},
+  {r = 12, d = 0.105},
+  {r = 9, d = 0.105},
+  {r = 7, d = 0.105},
+  {r = 5, d = 0.105},
+  {r = 2, d = 0.105},
+  {r = 1, d = 0.215},
 }
-robin_as2 = {
-  {rate = 14, duration = 0.105},
-  {rate = 12, duration = 0.435},
+robin_2 = {
+  {r = 14, d = 0.105},
+  {r = 12, d = 0.435},
 }
-robin_as3 = {
-  {rate = 1, duration = 0.215},
+robin_3 = {
+  {r = 1, d = 0.215},
 }
 
 --EUROASIAN WREN
-wren_as1 = {
-  {rate = 6, duration = 0.18},   
-  {rate = 3, duration = 0.18},   
-  {rate = 1, duration = 0.18},   
-  {rate = 11, duration = 0.36}, }
-wren_as2 = {
-  {rate = 3, duration = 0.18},
-  {rate = 1, duration = 0.18},
-  {rate = 11, duration = 0.36},
-  {rate = 1, duration = 0.18},
-  {rate = 2, duration = 0.004},
-  {rate = 1, duration = 0.09}, }
-wren_as3 = {  
-  {rate = 1.5, duration = 0.09},
-  {rate = 1, duration = 0.09},
-  {rate = 1.5, duration = 0.09},
-  {rate = 1, duration = 0.09},
-  {rate = 1.5, duration = 0.09},
-  {rate = 1, duration = 0.09},
-  {rate = 1.5, duration = 0.09},
-  {rate = 1, duration = 0.09},
-  {rate = 1.5, duration = 0.09},
-  {rate = 1, duration = 0.09},
-  {rate = 1.5, duration = 0.09},
-  {rate = 1, duration = 0.09},
-  {rate = 1.5, duration = 0.09},
-  {rate = 1, duration = 0.09},
-  {rate = 1.5, duration = 0.09},
-  {rate = 5, duration = 0.36},
-  {rate = 6, duration = 0.18},}
-wren_as4 ={  
-  {rate = 11, duration = 0.18},
-  {rate = 1, duration = 0.18}, 
-  {rate = 11, duration = 0.18},
-  {rate = 1, duration = 0.18}, 
-  {rate = 11, duration = 0.18},
-  {rate = 1, duration = 0.18}, 
-  {rate = 11, duration = 0.18},
-  {rate = 1, duration = 0.18}, 
-  {rate = 11, duration = 0.18},
-  {rate = 1, duration = 0.18}, 
-  {rate = 11, duration = 0.18},
-  {rate = 1, duration = 0.36},
-  {rate = (1)/2, duration = 0.36}
+wren_1 = {
+  {r = 6, d = 0.18},   
+  {r = 3, d = 0.18},   
+  {r = 1, d = 0.18},   
+  {r = 11, d = 0.36}, }
+wren_2 = {
+  {r = 3, d = 0.18},
+  {r = 1, d = 0.18},
+  {r = 11, d = 0.36},
+  {r = 1, d = 0.18},
+  {r = 2, d = 0.004},
+  {r = 1, d = 0.09}, }
+wren_3 = {  
+  {r = 1.5, d = 0.09},
+  {r = 1, d = 0.09},
+  {r = 1.5, d = 0.09},
+  {r = 1, d = 0.09},
+  {r = 1.5, d = 0.09},
+  {r = 1, d = 0.09},
+  {r = 1.5, d = 0.09},
+  {r = 1, d = 0.09},
+  {r = 1.5, d = 0.09},
+  {r = 1, d = 0.09},
+  {r = 1.5, d = 0.09},
+  {r = 1, d = 0.09},
+  {r = 1.5, d = 0.09},
+  {r = 1, d = 0.09},
+  {r = 1.5, d = 0.09},
+  {r = 5, d = 0.36},
+  {r = 6, d = 0.18},}
+wren_4 ={  
+  {r = 11, d = 0.18},
+  {r = 1, d = 0.18}, 
+  {r = 11, d = 0.18},
+  {r = 1, d = 0.18}, 
+  {r = 11, d = 0.18},
+  {r = 1, d = 0.18}, 
+  {r = 11, d = 0.18},
+  {r = 1, d = 0.18}, 
+  {r = 11, d = 0.18},
+  {r = 1, d = 0.18}, 
+  {r = 11, d = 0.18},
+  {r = 1, d = 0.36},
+  {r = (1)/2, d = 0.36}
 }
 --SONG TRUSH
-trush_as1 = {
-  {rate = 10, duration = 0.05}, --grace note
-  {rate = 4, duration = 0.1},  --sixteenth
-  {rate = 13, duration = 0.05},
-  {rate = 7, duration = 0.1},
-  {rate = 15, duration = 0.1},
+trush_1 = {
+  {r = 10, d = 0.05}, --grace note
+  {r = 4, d = 0.1},  --sixteenth
+  {r = 13, d = 0.05},
+  {r = 7, d = 0.1},
+  {r = 15, d = 0.1},
 }
-trush_as2 = {
-  {rate = 10, duration = 0.05}, --grace note
-  {rate = 4, duration = 0.1},  --sixteenth
-  {rate = 13, duration = 0.05},
-  {rate = 7, duration = 0.1},
-  {rate = 15, duration = 0.1},
+trush_2 = {
+  {r = 10, d = 0.05}, --grace note
+  {r = 4, d = 0.1},  --sixteenth
+  {r = 13, d = 0.05},
+  {r = 7, d = 0.1},
+  {r = 15, d = 0.1},
 }
-trush_as3 = {
-  {rate = 7, duration = 0.05},  --32th
-  {rate = 8, duration = 0.05},
-  {rate = 14, duration = 0.05},
-  {rate = 13, duration = 0.05},
-  {rate = 12, duration = 0.05},
-  {rate = 10, duration = 0.05},
-  {rate = 9, duration = 0.1},
+trush_3 = {
+  {r = 7, d = 0.05},  --32th
+  {r = 8, d = 0.05},
+  {r = 14, d = 0.05},
+  {r = 13, d = 0.05},
+  {r = 12, d = 0.05},
+  {r = 10, d = 0.05},
+  {r = 9, d = 0.1},
 }
-trush_as4 = {
-  {rate = 1, duration = 0.05},  --32th
-  {rate = 7, duration = 0.05},
-  {rate = 13, duration = 0.05},
-  {rate = 14, duration = 0.05},
-  {rate = 14, duration = 0.1},
-  {rate = 1, duration = 0.05},  --32th
-  {rate = 7, duration = 0.05},
-  {rate = 13, duration = 0.05},
-  {rate = 14, duration = 0.05},
-  {rate = 14, duration = 0.1},
+trush_4 = {
+  {r = 1, d = 0.05},  --32th
+  {r = 7, d = 0.05},
+  {r = 13, d = 0.05},
+  {r = 14, d = 0.05},
+  {r = 14, d = 0.1},
+  {r = 1, d = 0.05},  --32th
+  {r = 7, d = 0.05},
+  {r = 13, d = 0.05},
+  {r = 14, d = 0.05},
+  {r = 14, d = 0.1},
 }
-trush_as5 ={
-  {rate = 1, duration = 0.1}
+trush_5 ={
+  {r = 1, d = 0.1}
 }
 
---COMMON REDSTART
-redstart_as1 = {
-  {rate = 15, duration = 0.17},--eight
-  {rate = 11, duration = 0.09},--sixtenth
-  {rate = 9, duration = 0.17} }
-redstart_as2 = {  
-  {rate = 12, duration = 0.04},
-  {rate = 10, duration = 0.04},
-  {rate = 3, duration = 0.04},
-  {rate = 8, duration = 0.04},
-  {rate = 13, duration = 0.04},
-  {rate = 2, duration = 0.04},
-  {rate = 1, duration = 0.04},
-  {rate = 8, duration = 0.09} 
+--COMMON finch
+finch_1 = {
+  {r = 18, d = 0.025},
+  {r = 0, d = 0.008},
+  {r = 18, d = 0.025},
+  {r = 0, d = 0.011},
+  {r = 17, d = 0.020},
+  {r = 0, d = 0.002},
+  {r = 17, d = 0.015},
+  {r = 0, d = 0.002},
+  {r = 17, d = 0.012},
+  {r = 0, d = 0.002},
+  {r = 17, d = 0.010},
+  {r = 0, d = 0.002},
+  {r = 17, d = 0.050},
+  {r = 12, d = 0.025},
+  {r = 19, d = 0.025},
+  {r = 0, d = 0.040},
+  {r = 11, d = 0.020},
+  {r = 0, d = 0.002},
+  {r = 10, d = 0.015},
+  {r = 0, d = 0.002},
+  {r = 9, d = 0.012},
+  {r = 0, d = 0.002},
+  {r = 10, d = 0.020},
+  {r = 0, d = 0.020},
+  {r = 9, d = 0.025},
+  {r = 0, d = 0.020},
+  {r = 8, d = 0.030},
+  {r = 7, d = 0.020},
+  {r = 0, d = 0.020},
+  {r = 1.5, d = 0.045},
 }
-redstart_as3 = {  
-  {rate = 1, duration = 0.04}}
+
   
 --BLACKBIRD
-blackbird_as1 = {
-  {rate = (11) + 12 , duration = 0.052},--32
-  {rate = (11) + 12 , duration = 0.052},
-  {rate = (11) + 12 , duration = 0.052},
-  {rate = 4, duration = 0.052},
-  {rate = (9) + 12 , duration = 0.052},
-  {rate = (11) + 12 , duration = 0.052},
-  {rate = 3, duration = 0.052},
-  {rate = (9) + 12 , duration = 0.052},
-  {rate = (13) + 12 , duration = 0.052},
-  {rate = (10) + 12 , duration = 0.052},
-  {rate = 1 , duration = 0.052},}
-blackbird_as2 = {  
-  {rate = 1 , duration = 0.208},--eight
-  {rate = (15) + 12 , duration = 0.052},--eight
-  {rate = (17) + 12 , duration = 0.052},
-  {rate = (13) + 12 , duration = 0.104}
+blackbird_1 = {
+  {r = (11) + 12 , d = 0.052},--32
+  {r = (11) + 12 , d = 0.052},
+  {r = (11) + 12 , d = 0.052},
+  {r = 4, d = 0.052},
+  {r = (9) + 12 , d = 0.052},
+  {r = (11) + 12 , d = 0.052},
+  {r = 3, d = 0.052},
+  {r = (9) + 12 , d = 0.052},
+  {r = (13) + 12 , d = 0.052},
+  {r = (10) + 12 , d = 0.052},
+  {r = 1 , d = 0.052},}
+blackbird_2 = {  
+  {r = 1 , d = 0.208},--eight
+  {r = (15) + 12 , d = 0.052},--eight
+  {r = (17) + 12 , d = 0.052},
+  {r = (13) + 12 , d = 0.104}
 }
-blackbird_as3 = {  
-  {rate = 1 , duration = 0.208}
+blackbird_3 = {  
+  {r = 1 , d = 0.208}
 }--eight
+blackbird_4 = {
+--[[    {r = 11, d = 0.052, pb = 0},
+    {r = 11, d = 0.052, pb = 5},
+    {r = 11 , d = 0.052, pb = 0.5},
+    {r = 4, d = 0.052},]]
+    {r = (9) + 12 , d = 0.052, pb = 0},
+    {r = (11) + 12 , d = 0.052, pb = 0.3},
+    {r = 3, d = 0.052},
+    {r = (9) + 12 , d = 0.052, pb = 0},
+    {r = (13) + 12 , d = 0.052, pb = 0.2},
+    {r = (10) + 12 , d = 0.052, pb = 0},
+    {r = 1 , d = 0.052, pb = 1},}
+
+
+--GREAT TIT --- 
+great_tit_1 = {
+  {r = (6) + 12 , d = 0.52},--32
+  {r = (1) + 12 , d = 0.52},
+  {r = (6) + 12 , d = 0.52},
+  {r = (1.2) + 12 , d = 0.52},
+  {r = (6) + 12 , d = 0.52},
+  {r = (6) + 12 , d = 0.52},
+}
+great_tit_2 = {
+  {r = (6) + 12 , d = 0.52},--32
+  {r = 0 , d = 0.025}, --small pause
+  {r = (1.1) + 12 , d = 0.52},
+  {r = 0 , d = 0.025}, --small pause
+  {r = (6) + 12 , d = 0.52},
+  {r = 0 , d = 0.025}, --small pause
+  {r = (1.3) + 12 , d = 0.52},
+  {r = 0 , d = 0.025}, --small pause
+  {r = (6.1) + 12 , d = 0.52},
+  {r = 0 , d = 0.25}, -- long pause
+  {r = (6) + 12 , d = 0.52},
+}
+great_tit_3 = {
+  {r = (6) + 12 , d = 0.25},
+  {r = 0 , d = 0.25}, -- long pause
+  {r = (6) + 12 , d = 0.25},
+  {r = 0 , d = 0.025}, --small pause
+  {r = (9) + 12 , d = 0.25},--32
+  {r = 0 , d = 0.025}, --small pause
+  {r = (6) + 12 , d = 0.25},
+  {r = 0 , d = 0.025}, --small pause
+  {r = (9) + 12 , d = 0.25},--32
+  {r = 0 , d = 0.025}, --small pause
+  {r = (6) + 12 , d = 0.25},
+  {r = 0 , d = 0.025}, --small pause
+  {r = (9) + 12 , d = 0.25},--32
+  {r = 0 , d = 0.025}, --small pause
+  {r = (6) + 12 , d = 0.25},
+  {r = 0 , d = 0.25}, -- long pause
+  {r = (6) + 12 , d = 0.25},--32
+  {r = 0 , d = 0.025}, --small pause
+  {r = (9) + 12 , d = 0.25},--32
+}
+
+
+
 
 --AWESOME BIRD
 -- should behave based on scale
 awesome_1 = {
-    {rate = 1, duration = 1/8},
-    {rate = 7, duration = 1/16},   
-    {rate = 12, duration = 1/8},   
-    {rate = 1, duration = 1/8}, 
-    {rate = 12, duration = 1/4},
+    {r = 1, d = 1/8},
+    {r = 7, d = 1/16},   
+    {r = 12, d = 1/8},   
+    {r = 1, d = 1/8}, 
+    {r = 12, d = 1/4},
   }
   awesome_2 = {
-    {rate = 7, duration = 1/8},
-    {rate = 1, duration = 1/16},   
-    {rate = 12, duration = 1/8},   
-    {rate = 4, duration = 1/8}, 
-    {rate = 1, duration = 1/4}
+    {r = 7, d = 1/8},
+    {r = 1, d = 1/16},   
+    {r = 12, d = 1/8},   
+    {r = 4, d = 1/8}, 
+    {r = 1, d = 1/4}
   }
   awesome_3 = {
-    {rate = 7, duration = 1/32},
-    {rate = 1, duration = 1/16},   
-    {rate = 7, duration = 1/32},   
-    {rate = 12, duration = 1/8}, 
-    {rate = 1, duration = 1/4},
-    {rate = 7, duration = 1/2},
-    {rate = 12, duration = 1/16},
-    {rate = 4, duration = 1/16},
-    {rate = 7, duration = 1/24},
-    {rate = 12, duration = 1/32},
-    {rate = 4, duration = 1/8},
-    {rate = 1, duration = 1/4},
+    {r = 7, d = 1/32},
+    {r = 1, d = 1/16},   
+    {r = 7, d = 1/32},   
+    {r = 12, d = 1/8}, 
+    {r = 1, d = 1/4},
+    {r = 7, d = 1/2},
+    {r = 12, d = 1/16},
+    {r = 4, d = 1/16},
+    {r = 7, d = 1/24},
+    {r = 12, d = 1/32},
+    {r = 4, d = 1/8},
+    {r = 1, d = 1/4},
   }
   awesome_4 = {
-    {rate = 1, duration = 1/32},
-    {rate = 2, duration = 1/32},   
-    {rate = 4, duration = 1/32},   
-    {rate = 5, duration = 1/32}, 
-    {rate = 7, duration = 1/32},
-    {rate = 9, duration = 1/32},
-    {rate = 11, duration = 1/32},
-    {rate = 12, duration = 1/32},
-    {rate = 1, duration = 1/4},
-    {rate = 12, duration = 1/32},
-    {rate = 11, duration = 1/32},
-    {rate = 9, duration = 1/32},
-    {rate = 7, duration = 1/16},
-    {rate = 5, duration = 1/8}, 
-    {rate = 4, duration = 1/4},
-    {rate = 2, duration = 1/2}, 
-    {rate = 1, duration = 1/1},
+    {r = 1, d = 1/32},
+    {r = 2, d = 1/32},   
+    {r = 4, d = 1/32},   
+    {r = 5, d = 1/32}, 
+    {r = 7, d = 1/32},
+    {r = 9, d = 1/32},
+    {r = 11, d = 1/32},
+    {r = 12, d = 1/32},
+    {r = 1, d = 1/4},
+    {r = 12, d = 1/32},
+    {r = 11, d = 1/32},
+    {r = 9, d = 1/32},
+    {r = 7, d = 1/16},
+    {r = 5, d = 1/8}, 
+    {r = 4, d = 1/4},
+    {r = 2, d = 1/2}, 
+    {r = 1, d = 1/1},
   }
   awesome_5 = {
-    {rate = 1, duration = 1/8},
-    {rate = 7, duration = 1/16},   
-    {rate = 1, duration = 1/8},   
-    {rate = 7, duration = 1/8}, 
-    {rate = 12, duration = 1/4}
+    {r = 1, d = 1/8},
+    {r = 7, d = 1/16},   
+    {r = 1, d = 1/8},   
+    {r = 7, d = 1/8}, 
+    {r = 12, d = 1/4}
   }
   
   --WEIRD BIRD
   -- should behave based on scale
   weird = {
-    {rate = math.random((12)+2 / 2), duration = 1/4},
-    {rate = math.random((24)+2 / 2), duration = 1/4},   
-    {rate = math.random((7)+3*2), duration = 1/4},   
-    {rate = math.random((24)+2 / 2), duration = 1/4}, 
-    {rate = math.random((12)+2 / 2), duration = 1/4},
+    {r = math.random((12)+2 / 2), d = 1/4},
+    {r = math.random((24)+2 / 2), d = 1/4},   
+    {r = math.random((7)+3*2), d = 1/4},   
+    {r = math.random((24)+2 / 2), d = 1/4}, 
+    {r = math.random((12)+2 / 2), d = 1/4},
   }
   
-
----OTHER FUNCTIONS-------OTHER FUNCTIONS----
-
+-------- OTHER FUNCTIONS -------
 
 --auto pan
 function pan_aut()
   if pan_aut == not pan_aut then
-    for i = 1,#robin_song_as() do
-      sc.pan(1,pan_aut)
+    for i = 1,#robin_song() do
+      softcut.pan(1,pan_aut) --// this won't work. you need a value here and not bool.
     end
   end
 end
+
 
 -- 12TET
 function ntor(n)
@@ -421,52 +728,112 @@ end
 function pause()
   if display_note then
     display_note = false
-    redraw()
+    dirtyscreen = true
   end
-  sc.level(1, 0)
+  softcut.level(1, 0)
   clock.sleep(math.random(1) + 0.2)
-  sc.level(1, volume)
+  softcut.level(bird_voice, bird_level)
   print("pause")
   display_note = true
-  redraw()
+  dirtyscreen = true
 end
 
 --long pause
 function pause_l()
   if display_note then
     display_note = false
-    redraw()
+    dirtyscreen = true
   end
-  sc.level(1, 0)
+  softcut.level(1, 0)
   clock.sleep(250)
-  sc.level(1, volume)
+  softcut.level(bird_voice, bird_level)
   print("pause")
 end
 
 --Playback atmo
 function atmo(play)
   if play then
-    sc.play(2,1)
+    softcut.play(2,1)
   else
-    sc.play(2,0)
+    softcut.play(2,0)
   end
 end
 
+function toggle_rec()
+  if is_recording then
+    softcut.rec_level(1, 1)
+    softcut.pre_level(1, dub_level)
+    display_note = false
+    display_exl = true
+  else
+    softcut.rec_level(1, 0)
+    softcut.pre_level(1, 1)
+    display_note = false
+    display_exl = false
+  end
+  dirtyscreen = true
+end
+
 -- play note functions, just so it plays notes from a given table
-function play_notes(table)
+function play_notes2(table)
     for i = 1, #table do
       local current_note = table[i]
       local rate = ntor(current_note.rate) * 3
-      sc.rate(1, rate)
+      softcut.rate(1, rate)
       clock.sleep(current_note.duration)
       --print(i)
     end
-  end
+end
 
+
+---------------TESTING AREA-----------
+
+-- great_tit TEST
+
+gt_1 = {
+  {r = 0, d = 0.2, l = 0, pb = 0.1},
+  {r = 6, d = 0.13, l = 0.5, pb = 0},
+  {r = 0, d = 0.02, l = 0},
+  {r = 1, d = 0.18, l = 0.7, pb = 0},
+  {r = 0, d = 0.2, l = 0},
+  {r = 6, d = 0.13, l = 0.5, pb = 0},
+  {r = 0, d = 0.02, l = 0},
+  {r = 1, d = 0.18, l = 0.7, pb = 0},
+  {r = 0, d = 0.2, l = 0},
+  
+}
+
+function play_notes(note_table)
+    for i = 1, #note_table do
+      local current_note = note_table[i]
+      local rate = ntor(current_note.r) * 3
+      softcut.rate(1, rate)
+      
+     
+      softcut.level(1, current_note.l or bird_level)
+      
+      if current_note.pb then
+        local pitch_bend = current_note.pb
+        if pitch_bend ~= 0 then
+          local target_rate = pitch_bend
+          
+          softcut.rate_slew_time(1, target_rate)
+        end
+      end
+      
+      clock.sleep(current_note.d)
+    end
+end
+
+  
+-----------------------------------
+
+
+-----
 --RANDOMS SEQUENCE for birds
 --randomize function -- currently just for wren
 function generate_random_sequence()
-  local sequence = {wren_as1, wren_as2, wren_as3, wren_as4}
+  local sequence = {wren_1, wren_2, wren_3, wren_4}
   for i = 1, #sequence do -- loop throught the elements
     local random_index = math.random(i) -- picks a random number
     sequence[i], sequence[random_index] = sequence[random_index], sequence[i] -- swaping the current element with random positions
@@ -474,105 +841,128 @@ function generate_random_sequence()
   return sequence -- give us the sequense
 end
 
---BIRD FUNCTIONS!
-function wren_song_as()
+--BIRD FUNCTIONS! 
+function wren_song()
   while true do
-  sc.level(1,volume)
+  softcut.level(bird_voice, bird_level)
   local sequence = generate_random_sequence()
     for i = 1, #sequence do
      play_notes(sequence[i])
      pause()
     end
-    end
+  end
 --pause_l()
 end
 
-function wren_song_as2()
+function wren_song_2()
   while true do
-    sc.level(1,volume)
-    play_notes(wren_as1)
+    softcut.level(bird_voice, bird_level)
+    play_notes(wren_1)
     print ("wren_song")
     pause()
-    play_notes(wren_as2)
+    play_notes(wren_2)
     print ("wren_song")
     pause()
-    play_notes(wren_as3)
+    play_notes(wren_3)
     print ("wren_song")
     pause()
-    play_notes(wren_as4)
+    play_notes(wren_4)
     print ("wren_song")
     --pause_l()
   end
 end
 
-function robin_song_as()
+function robin_song()
   while true do
-    sc.level(1,volume)
+    softcut.level(bird_voice, bird_level)
     print ("robin_song")
-    play_notes(robin_as1)
-    pause()
-    print ("robin_song")
-    play_notes(robin_as2)
+    play_notes(robin_1)
     pause()
     print ("robin_song")
-    play_notes(robin_as3)
+    play_notes(robin_2)
+    pause()
+    print ("robin_song")
+    play_notes(robin_3)
     pause()
   end
 end
 
-function trush_song_as()
+function trush_song()
   while true do
-  sc.level(1,volume)
-  play_notes(trush_as1)
+  softcut.level(bird_voice, bird_level)
+  play_notes(trush_1)
   pause()
-  play_notes(trush_as2)
+  play_notes(trush_2)
   pause()
-  play_notes(trush_as3)
+  play_notes(trush_3)
   pause()
-  play_notes(trush_as4)
+  play_notes(trush_4)
   pause()
-  play_notes(trush_as5)
+  play_notes(trush_5)
   pause()
   end
 end
 
-function redstart_song_as()
+function finch_song()
   while true do
-  sc.level(1,volume)
-  play_notes(redstart_as1)
-  pause()
-  play_notes(redstart_as2)
-  pause()
-  play_notes(redstart_as3)
+    softcut.level(bird_voice, bird_level)
+  play_notes(finch_1)
   pause()
   end
 end
 
-function blackbird_song_as()
+function blackbird_song()
   while true do
-    sc.level(1,volume)
-    play_notes(blackbird_as1)
+    softcut.level(bird_voice, bird_level)
+    play_notes(blackbird_1)
     pause()
-    play_notes(blackbird_as2)
+    play_notes(blackbird_2)
     pause()
-    play_notes(blackbird_as3)
+    play_notes(blackbird_3)
     pause()
+   play_notes(blackbird_4)
+  pause()
   end
 end
 
-function nightingale_song_as()
+function nightingale_song()
   while true do
-  sc.level(1,volume)
-  play_notes(gale_as1)
+  softcut.level(bird_voice, bird_level)
+  play_notes(gale_1)
   pause_l()
   end
 end
 
---other birds
+function great_tit_song()
+  while true do
+  softcut.level(bird_voice, bird_level)
+  --[[play_notes(great_tit_1)
+  pause()
+  play_notes(great_tit_2)
+  pause()
+  play_notes(great_tit_3)]]
+  play_notes(gt_1)
+  pause()
+  end
+end
 
+function great_tit_song2()
+  while true do
+  softcut.level(bird_voice, bird_level)
+  play_notes(great_tit_1)
+  pause()
+  play_notes(great_tit_2)
+  pause()
+  play_notes(great_tit_3)
+  pause()
+  end
+end
+
+
+--other birds
 function awesomebird_song()
   while true do
-  sc.level(1,volume)
+  softcut.level(bird_voice, bird_level)
   play_notes(awesome_1)
   pause()
   play_notes(awesome_2)
@@ -592,247 +982,79 @@ play_notes(weird)
   pause()
   end
 end
-  
+
+
+-------- UI --------
+
 -- ENCODERS
 function enc(n, d)
-  local loop_size = 0.1
-  if n == 2 then
-    --params:delta("loop_start", d * 0.01)
-    loop_size = util.clamp(loop_size + d * 0.01, 0.01, 3)
-    loop_start = util.clamp(loop_start + d * 0.01, 0, loop_end - loop_size)
-    loop_end = util.clamp(loop_end + d * 0.01, loop_start + loop_size, 3)
-    sc.loop_start(1, loop_start)
-    sc.loop_end(1, loop_end)
-    print("Loop size:", loop_size)
-    print("Loop start:", loop_start)
-    print("Loop end:", loop_end)
-  elseif n == 3 then
-    volume = util.clamp(volume + d / 100, 0, 1) -- Adjust the range for finer control
-    print(string.format("Volume: %.2f", volume))
-    sc.level(1, volume)
-  elseif n == 1 then
+  if n == 1 then
     active_bird = util.clamp(active_bird + d, 1, #birds)
-    current_bird = util.clamp(active_bird + d, 1, #ids)
-    brd_change = birds[active_bird]
-    print("brd:", brd_change,d,active_bird,#ids)
+    params:set("chosen_bird", active_bird)
+  elseif n == 2 then
+    params:delta("loop_start", d / 10)
+  elseif n == 3 then
+    params:delta("bird_level", d / 10)
   end
-  redraw()
+  dirtyscreen = true
 end
-
 
 -- KEYS
 -- TOGGLES HERE
 function key(n, z)
-  if n==2 and z == 1 then
-      if play_bird == 1 then
-        play_bird = 0
-        print("play")
+   if n == 1 and z == 1 then
+    garden_is_planted = not garden_is_planted
+    garden = not garden
+    k1_pressed = not k1_pressed
+   elseif k1_pressed and n == 2 and z == 1 then
+     garden = true
+     dirtyscreen = true
+   elseif n == 2 and z == 1 then
+    bird_is_singing = not bird_is_singing
+    active_loop = not active_loop
+
+    if bird_is_singing and active_loop and k1_pressed == false then
+      print("play")
       if current_bird == "wren" then
-        ids["wren"] = clock.run(wren_song_as)
-        display_note = true
-        display_exl = false
+        ids["wren"] = clock.run(wren_song)
       elseif current_bird == "robin" then
-        ids["robin"] = clock.run(robin_song_as)
-        display_note = true
-        display_exl = false
+        ids["robin"] = clock.run(robin_song)
       elseif current_bird == "trush" then
-        ids["trush"] = clock.run(trush_song_as)
-        display_note = true
-        display_exl = false
-      elseif current_bird == "redstart" then
-        ids["redstart"] = clock.run(redstart_song_as)
-        display_note = true
-        display_exl = false
+        ids["trush"] = clock.run(trush_song)
+      elseif current_bird == "finch" then
+        ids["finch"] = clock.run(finch_song)
       elseif current_bird == "blackbird" then
-        ids["blackbird"] = clock.run(blackbird_song_as)
-        display_note = true
-        display_exl = false
+        ids["blackbird"] = clock.run(blackbird_song)
+      elseif current_bird == "great tit" then
+        ids["great tit"] = clock.run(great_tit_song)
       elseif current_bird == "nightingale" then
-         ids["nightingale"] = clock.run(nightingale_song_as)
-        display_note = true
-        display_exl = false
+        ids["nightingale"] = clock.run(nightingale_song)
       elseif current_bird == "awesomebird" then
-        ids["awesomebird"] = clock.run(awesome_song_as)
-        display_note = true
-        display_exl = false
+        ids["awesomebird"] = clock.run(awesome_song)
         --clock.run(awesomebird_song)
       elseif current_bird == "weird" then
         id["weird"] = clock.run(weird_bird)
-        display_note = true
-        display_exl = false
-    end
-      else
-        play_bird = 1
-        clock.cancel(ids[current_bird])
-        display_note = false
-        print("cancel")
       end
-    redraw()
-   elseif n == 3 and z == 1 then
+      display_note = true
+      display_exl = false
+    else
+      k1_pressed = false
+      softcut.level(bird_voice, 0)
+      clock.cancel(ids[current_bird])
+      display_note = false
+      print("cancel")
+      dirtyscreen = true
+    end
+    dirtyscreen = true
+  elseif n == 3 and z == 1 then
     if k1_pressed and k2_pressed then
-      sc.buffer_clear()
+      softcut.buffer_clear_channel(1) -- don't clear both buffers but only buffer 1
     else
-      sc.rec(1, 1)
-      if freeze == 1 then
-        freeze = 0
-        softcut.pre_level(1, freeze)
-        sc.level(1, 0)
-        sc.fade_time(1, 0.5)
-        display_note = false
-        display_exl = true
-      else
-        freeze = 1
-        sc.rec(1, 0)
-        sc.fade_time(1, 0.2)
-        display_note = false
-        display_exl = false
-      end
-      print(freeze)
-      redraw()
+      is_recording = not is_recording
+      toggle_rec()
     end
-   elseif n==1 and z==1 then
-      if isPlaying then
-      -- Stop playing
-      softcut.play(2, 0)
-      isPlaying = false
-      atmo(false)
-    else
-      softcut.play(2, 1)
-      isPlaying = true
-      atmo(true) -- Start the second buffer
-    end
-      print("play atmo")
-      redraw()
-    end
-end
-
--- TRANSFORM ---- TRANSFORM --
--- TRANSFORM ---- TRANSFORM --
--- random function meant transform the bird ndomly changing the birds 
--- active_bird is a variable and therefore the math.random is searching for these variables for the lenght of the birds table (#birds)
--- brd_change is a variable that starts with our default bird (wren) and then is based on whatever the next active_bird is 
--- this is then used in the redraw function and the encoder function
-
-
-function transform() -- this will be the TRANSFORM funciton
-  lat:start() -- starts the sequence
-  rand_bird() -- calls for a function
-end
-  
-function rand_bird()
-    active_bird = math.random(#birds) -- randomly changes the variable of active_bird
-    brd_change = birds[active_bird]  -- corresponds the current_bird to the active_bird variable
-    
-    rando() -- calls for a function where it starts the clock based on current bird
-    change_bird() -- calls for a function where it connects active_bird,current_bird to bird_name
-    
-    redraw()
-end
-  
-
-function rando()
-  if current_bird == "wren" then
-        active_bird = 1
-        ids["wren"] = clock.run(wren_song_as)
-        display_note = true
-        display_exl = false
-        
-  --[[--elseif current_bird ~= "wren" then
-        clock.cancel(active_bird)
-        print ("wren CANCEL")]] -------trying to solve the canceling of clocks!
-      
-  elseif current_bird == "robin" then
-        active_bird = 6
-        ids["robin"] = clock.run(robin_song_as)
-        display_note = true
-        display_exl = false
-        
---[[--elseif current_bird ~= "robin" and active_bird ~= 6 then
-      clock.cancel(active_bird + 6)
-      print ("robin CANCEL")]]
-    
-    
-      elseif current_bird == "trush" then
-        ids["trush"] = clock.run(trush_song_as)
-        display_note = true
-        display_exl = false
-      elseif current_bird == "redstart" then
-        ids["redstart"] = clock.run(redstart_song_as)
-        display_note = true
-        display_exl = false
-      elseif current_bird == "blackbird" then
-        ids["blackbird"] = clock.run(blackbird_song_as)
-        display_note = true
-        display_exl = false
-      print ("blackbird CANCEL")
-      elseif current_bird == "nightingale" then
-         ids["nightingale"] = clock.run(nightingale_song_as)
-        display_note = true
-        display_exl = false
-    end
-end
-
--- function for changing the bird
-  -- the function looks for the argument "brd_name" so it looks what arguments occupies and then changes it to that argument
-  function change_bird(brd_name)
-      if brd_name == "wren" then
-        current_bird = "wren"
-        active_bird = 1
-      elseif brd_name == "robin" then
-        current_bird = "robin"
-         active_bird = 2
-       elseif brd_name == "trush" then
-        current_bird = "trush"
-         active_bird = 3
-        elseif brd_name == "nightingale" then
-        current_bird = "nigtingale"
-         active_bird = 4
-        elseif brd_name == "blackbird" then
-        current_bird = "blackbird"
-         active_bird = 5
-        elseif brd_name == "redstart" then
-        current_bird = "redstart"
-         active_bird = 6
-      end
-    redraw()
-    end
-    
-function cancel_all() -- stops the sequence and clocks
-  clock.cancel(active_bird)
-  lat:stop()
-end
-
-
---UNUSED--
---[[function away() -- whatever the current bird is  #birds it will cancel the clock using the ids
-  if play_bird == 1 then
-    play_bird = 1
-    elseif current_bird == current_bird then
-    clock.cancel(ids[current_bird])
   end
-end]]
-    
-  -- LATTICE 
-  -- function to start the lattice occupied by one sprocket which calls for the function rand_bird() and sets the division of change
-  function init_lattice()
-    lat = Lattice:new{
-      auto = true, --its a master clock
-      meter = 4,
-      ppqn = 96 -- pusles per quarter note
-    }
-  
-    random_bird_time = lat:new_sprocket{
-      action = function(t) 
-       rand_bird() 
-       random_bird_time:set_division(pat1_div_seq())
-      end,
-      division = 1,
-      enabled = true
-    }
-    
-  end
-  
-------------------------------------------------------------------------------------------
+end
 
 -- GUI
 function redraw()
@@ -840,11 +1062,12 @@ function redraw()
   screen.move(10, 50)
   screen.text("pos: ")
   screen.move(118, 50)
-  screen.text_right(string.format("%.1f", loop_start))
+  screen.text_right(params:string("loop_start"))
   screen.move(10, 60)
   screen.text("volume: ")
   screen.move(118, 60)
-  screen.text_right(string.format("%.2f", volume))
+  screen.text_right(params:string("bird_level"))
+  
    if brd_change == "weird" then
     screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/weird1.png", 38, 18)
     screen.move(65, 10)
@@ -855,11 +1078,16 @@ function redraw()
     screen.move(65, 10)
     screen.text_center("good boi")
     current_bird = "awesomebird"
-  elseif brd_change =="redstart" then
-    screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/redstart1.png", 38, 18)
+  elseif brd_change =="great tit" then
+    screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/great_tit.png", 38, 18)
     screen.move(65, 10)
-    screen.text_center("common redstart")
-    current_bird = "redstart"
+    screen.text_center("great tit")
+    current_bird = "great tit"
+  elseif brd_change =="finch" then
+    screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/chaffinch.png", 38, 18)
+    screen.move(65, 10)
+    screen.text_center("chaffinch")
+    current_bird = "finch"
   elseif brd_change == "trush" then
     screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/trush1.png", 38, 18)
     screen.move(65, 10)
@@ -892,13 +1120,172 @@ function redraw()
   if display_exl then
     screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/exl.png", 90, 20)
   end
+  if garden == true then
+    print("this should change")
+    screen.clear()
+    screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/garden2.png", 0, 0)
+  elseif garden == false then
+    brd_change = current_bird
+  end
   screen.update()
   print(current_bird)
 end
 
+-- TRANSFORM ---- TRANSFORM --
+-- random function meant transform the bird ndomly changing the birds 
+-- active_bird is a variable and therefore the math.random is searching for these variables for the lenght of the birds table (#birds)
+-- brd_change is a variable that starts with our default bird (wren) and then is based on whatever the next active_bird is 
+-- this is then used in the redraw function and the encoder function
+
+function transform() -- this will be the TRANSFORM funciton
+  if transform_party == true then
+    lat:start() -- starts the sequence
+    rand_bird() -- calls for a function
+  elseif transform_party == false then
+    lat:stop()
+    clock.cancel(active_bird)
+  end
+end
+
+function rand_bird()
+    active_bird = math.random(#birds) -- randomly changes the variable of active_bird
+    brd_change = birds[active_bird]  -- corresponds the current_bird to the active_bird variable
+    
+    rando() -- calls for a function where it starts the clock based on current bird
+    change_bird() -- calls for a function where it connects active_bird,current_bird to bird_name
+    
+    dirtyscreen = true
+end
+
+function rando()
+  if current_bird == "wren" then
+        active_bird = 1
+        ids["wren"] = clock.run(wren_song)
+        display_note = true
+        display_exl = false
+        
+  --[[--elseif current_bird ~= "wren" then
+        clock.cancel(active_bird)
+        print ("wren CANCEL")]] -------trying to solve the canceling of clocks!
+      
+  elseif current_bird == "robin" then
+        active_bird = 6
+        ids["robin"] = clock.run(robin_song)
+        display_note = true
+        display_exl = false
+        
+--[[--elseif current_bird ~= "robin" and active_bird ~= 6 then
+      clock.cancel(active_bird + 6)
+      print ("robin CANCEL")]]
+    
+      elseif current_bird == "trush" then
+        ids["trush"] = clock.run(trush_song)
+        display_note = true
+        display_exl = false
+      elseif current_bird == "finch" then
+        ids["finch"] = clock.run(finch_song)
+        display_note = true
+        display_exl = false
+      elseif current_bird == "great tit" then
+        ids["great tit"] = clock.run(great_tit_song)
+        display_note = true
+        display_exl = false  
+      elseif current_bird == "blackbird" then
+        ids["blackbird"] = clock.run(blackbird_song)
+        display_note = true
+        display_exl = false
+      print ("blackbird CANCEL")
+      elseif current_bird == "nightingale" then
+         ids["nightingale"] = clock.run(nightingale_song)
+        display_note = true
+        display_exl = false
+    end
+end
 
 
-------------------------------------------------------------------------------------
+function cancel_all() -- stops the sequence and clocks
+  clock.cancel(active_bird)
+  lat:stop()
+end
 
 
+--UNUSED--
+--[[function away() -- whatever the current bird is  #birds it will cancel the clock using the ids
+  if play_bird == 1 then
+    play_bird = 1
+    elseif current_bird == current_bird then
+    clock.cancel(ids[current_bird])
+  end
+end]]
+    
+  -- LATTICE 
+  -- function to start the lattice occupied by one sprocket which calls for the function rand_bird() and sets the division of change
+  function init_lattice()
+    lat = Lattice:new{
+      auto = true, --its a master clock
+      meter = 4,
+      ppqn = 96 -- pusles per quarter note
+    }
+  
+    random_bird_time = lat:new_sprocket{
+      action = function(t) 
+       rand_bird() 
+       random_bird_time:set_division(pat1_div_seq())
+      end,
+      division = 1,
+      enabled = true
+    }
+  end
+  
+------------------------------------------------------------------------------------------
 
+--[[
+--- proof of concept
+--clock.run(play_birdsongs, bird.robin)
+
+function play_birdsongs(bird)
+
+  local songcount = 0
+  while true do
+    softcut.level(1, volume)
+    local song = math.random(1, #bird)
+    -- play notes
+    for i = 1, #bird[song] do
+      local current_note = bird[song][i]
+      local rate = ntor(current_note.rate) * 3
+      softcut.rate(1, rate)
+      clock.sleep(current_note.duration)
+    end
+    softcut.level(1, 0)
+    clock.sleep(math.random(1) + 0.2)
+  end
+end
+
+bird = {}
+bird.robin = {}
+for i = 1, 3 do
+  bird.robin[i] = {}
+end
+
+bird.robin[1] = {
+  {rate = 19, duration = 0.105},
+  {rate = 17, duration = 0.105},
+  {rate = 14, duration = 0.105},
+  {rate = 12, duration = 0.105},
+  {rate = 9, duration = 0.105},
+  {rate = 7, duration = 0.105},
+  {rate = 5, duration = 0.105},
+  {rate = 2, duration = 0.105},
+  {rate = 1, duration = 0.215},
+}
+
+bird.robin[2] = {
+  {rate = 14, duration = 0.105},
+  {rate = 12, duration = 0.435},
+}
+
+bird.robin[3] = {
+  {rate = 1, duration = 0.215},
+}
+
+]]
