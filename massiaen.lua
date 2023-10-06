@@ -1,19 +1,23 @@
 --- massiaen v0.1 @fellowfinch
 --- llllllll.co/t/url
 --- 
----
---- the birds love you!
----
----
----  ▼ instructions below ▼
+--- "birds are the first and
+--- the greatest performers"
+--- -Messiaen
+--- 
+--- ▼ instructions below ▼
+---  
 ---
 --- E1 change that bird!
 --- E2 chirp size
 --- E3 chirp volume
 ---
---- K1 forest me up!
+--- K1 combo
 --- K2 it sings
 --- K3 it listens (!)
+--- K1+K2 toggle garden
+--- K1+K3 toggle info
+---
 ---
 --- show the bird what you got
 --- by playing some shit into 
@@ -27,7 +31,7 @@
 Lattice = require ("lattice") -- clock for the randomization paterning 
 s = require("sequins") -- the sequence at which the randomization changes
 
---include ("lib/birds")
+--include ("lib/birds") --2sacha: we will add this for the libs yea?
 
 -------- VARIABLES --------
 
@@ -40,21 +44,25 @@ level = l
 pitch_bend = pb
 
 -- bird variables
-bird_is_singing = false -- replaces play_bird
-bird_voice = 1 -- softcut voice 1
+bird_is_singing = false
+bird_voice = 1
 bird_level = 0
 bird_pan = 0
 bird_cutoff = 18000
 bird_filter_q = 4
 active_bird = 1 -- active bird is strictly a VALUE as it is used in the rand_bird() functions
-brd_change = "wren" -- default, so it always start on wren
+brd_change = "wren"
 active_loop = false
 
 -- forest variables
-forest_voice = 6 -- softcut voice 2
+forest_voice = 6 -- 2sacha: this was changed from 2 to playhead 6
 forest_level = 0
 forest_is_planted = false
 garden_is_planted = false
+
+--info variable
+info = false
+
 
 -- sofutcut varables
 is_recording = false
@@ -73,12 +81,13 @@ pan_aut = false -- might use this later on?
 -- UI variables
 display_note = false 
 display_exl = false
-
 k1_pressed = false
 k2_pressed = false
-
-
 garden = false
+info = false
+
+-- transform
+transform_party = false
 
 -- clock table for birds
 -- this is basically so it can be canceled by calling the function clock.cancel(ids[current_bird]) that is now hooked up to the Toggle of K2
@@ -92,10 +101,6 @@ ids["finch"] = clock.run
 ids["great tit"] = clock.run
 ids["awesomebird"] = clock.run
 ids["weird"] = clock.run
-
--- transform
-transform_party = false
-
 
 -------- TABLES --------
 
@@ -138,7 +143,6 @@ function change_bird(brd_name)
   end
   dirtyscreen = true
 end
-    
 
 -- load forest file
 function load_audio(path)
@@ -149,7 +153,7 @@ function load_audio(path)
       softcut.buffer_clear_channel(2)
       softcut.buffer_read_mono(path, 0, 1, -1, 1, 2, 0, 1)
       --softcut.buffer_read_mono(file, start_src, start_dst, dur, ch_src, ch_dst)
-      local l = math.min(len / 48000, MAX_BUFFER) -- can you explain this to me please, why 48000? because of the sample rate?
+      local l = math.min(len / 48000, MAX_BUFFER) -- 2sacha: can you explain this to me please, why 48000? because of the sample rate?
       -- plant forest
       softcut.loop_start(forest_voice, 1)
       softcut.loop_end(forest_voice, 1 + l)
@@ -161,6 +165,7 @@ function load_audio(path)
   end
 end
 
+-- forest
 function toggle_forest()
   if forest_is_planted then
     softcut.position(forest_voice, 1)
@@ -172,6 +177,7 @@ function toggle_forest()
 end
 
 -- garden
+-- 2sacha: garden mode basically should put the listener in a space where the sampled audio is then populated to different playheads based on the chosen birds via params
 function toggle_garden()
   if garden_is_planted then
   garden = true
@@ -183,7 +189,7 @@ function toggle_garden()
 end
 
 
-function populate()
+function populate() -- 2sacha: populate function should make a copy of the signal and throw it into different 5 playheads, the recorded material would then intermingle...i'll explain better on the sesh 
     -- Initialize stage
     print ("they are coming")
     softcut.buffer_clear()
@@ -200,7 +206,7 @@ function populate()
         softcut.loop_end(i, 5)
         softcut.position(i, 1)
         softcut.play(i, 1)
-        softcut.fade_time(i, fade_time)  -- Use 'i' as the softcut index
+        softcut.fade_time(i, fade_time)
         
         -- Slew
         softcut.level_slew_time(i, level_slew)
@@ -217,16 +223,15 @@ function populate()
         softcut.post_filter_rq(i, bird_filter_q)
         
         -- Get the selected bird from params
-        local chosenBirdIndex = params:get("choir")
+        local chosenBirdIndex = params:get("choir") -- this will need work!
         local chosenBird = birds[chosenBirdIndex]
         print("Chosen Bird: " .. chosenBird .. sc.buffer)
         end
     end
 end
 
-
-
-function toggle_active_loop()
+function toggle_active_loop() -- this is so we can hear what we recorded
+  --2sacha: i want this so we can hear what we recorded without needing to activate the bird, this is done via params "seed audiable?" option
   if active_loop then
     bird_is_singing = not bird_is_singing
     softcut.play(bird_voice, 1)
@@ -260,6 +265,7 @@ function set_loop()
   print("Loop end:", loop_end)
 end
 
+--bird level
 function set_bird_level()
   if bird_is_singing then
     softcut.level(bird_voice, bird_level)
@@ -268,12 +274,11 @@ function set_bird_level()
   end
 end
 
-
 -- init function
 function init()
   softcut.buffer_clear()
-  softcut.enable(bird_voice, 1) -- playhead 1 is on
-  softcut.buffer(bird_voice, 1) -- playhead 1 plays on buffer 1
+  softcut.enable(bird_voice, 1) 
+  softcut.buffer(bird_voice, 1) 
   softcut.level(bird_voice, 0)
   softcut.rate(bird_voice, 1.0)
   softcut.loop(bird_voice, 1)
@@ -319,8 +324,8 @@ function init()
   init_lattice()
   --lat:start()
   
-  -- PARAMETERS
 
+  -- PARAMETERS
   -- bird voice params
   params:add_separator("bird_voicing", "bird voice")
   
@@ -354,7 +359,6 @@ function init()
   params:add_option("transform", "start the party?", {"no", "yes"}, 1)
   params:set_action("transform", function(val) transform_party = val == 2 and true or false transform() end)
   
-  
   -- create garden
   params:add_separator("garden")
   params:add_group("choir", "bird choir", 5)
@@ -365,23 +369,16 @@ function init()
    params:set_action("summon_birds", function(val) garden_is_planted = val == 2 and true or false toggle_garden() end)
   
   -- add forest
-  params:add_separator("forest_params", "plant forest")
-  params:add_file("load_forest", "> load forest", "")
+  params:add_separator("forest_params", "plant forest or garden")
+  params:add_file("load_forest", "> load enviroment", "")
   params:set_action("load_forest", function(path) load_audio(path) end)
 
-  params:add_option("plant_forest", "plant forest", {"no", "yes"}, 1)
+  params:add_option("plant_forest", "plant?", {"no", "yes"}, 1)
   params:set_action("plant_forest", function(val) forest_is_planted = val == 2 and true or false toggle_forest() end)
 
   params:add_control("forest_level", "level", controlspec.new(0, 1, 'lin', 0, 1, ""))
   params:set_action("forest_level", function(val) forest_level = val softcut.level(forest_voice, val) end)
   
-  
-  --add info
-  --params:add_separator("bird_info", "bird info")
-  --params:add_text("bird_info", "great tit", "great tit is a cool looking bird")
-
-
-
   params:bang()
 
   -- metros
@@ -637,9 +634,6 @@ great_tit_3 = {
   {r = (9) + 12 , d = 0.25},--32
 }
 
-
-
-
 --AWESOME BIRD
 -- should behave based on scale
 awesome_1 = {
@@ -713,7 +707,7 @@ awesome_1 = {
 function pan_aut()
   if pan_aut == not pan_aut then
     for i = 1,#robin_song() do
-      softcut.pan(1,pan_aut) --// this won't work. you need a value here and not bool.
+      softcut.pan(1,math.random(2))
     end
   end
 end
@@ -750,7 +744,7 @@ function pause_l()
   print("pause")
 end
 
---Playback atmo
+--Playback atmo garden or forest
 function atmo(play)
   if play then
     softcut.play(2,1)
@@ -787,6 +781,7 @@ end
 
 
 ---------------TESTING AREA-----------
+--2sacha: this is a testing area to fine tune the birdsong
 
 -- great_tit TEST
 
@@ -829,9 +824,9 @@ end
 -----------------------------------
 
 
------
 --RANDOMS SEQUENCE for birds
 --randomize function -- currently just for wren
+-- 2sacha: i think we'll need to find a way of making it random for all birds
 function generate_random_sequence()
   local sequence = {wren_1, wren_2, wren_3, wren_4}
   for i = 1, #sequence do -- loop throught the elements
@@ -1005,11 +1000,19 @@ function key(n, z)
    if n == 1 and z == 1 then
     garden_is_planted = not garden_is_planted
     garden = not garden
+    info = not info
     k1_pressed = not k1_pressed
    elseif k1_pressed and n == 2 and z == 1 then
+     k1_pressed = true
      garden = true
+     print ("garden = true")
+     info = false
+     print ("info = false")
      dirtyscreen = true
    elseif n == 2 and z == 1 then
+    k1_pressed = false
+    garden = false
+    info = false
     bird_is_singing = not bird_is_singing
     active_loop = not active_loop
 
@@ -1038,7 +1041,6 @@ function key(n, z)
       display_note = true
       display_exl = false
     else
-      k1_pressed = false
       softcut.level(bird_voice, 0)
       clock.cancel(ids[current_bird])
       display_note = false
@@ -1047,19 +1049,37 @@ function key(n, z)
     end
     dirtyscreen = true
   elseif n == 3 and z == 1 then
-    if k1_pressed and k2_pressed then
-      softcut.buffer_clear_channel(1) -- don't clear both buffers but only buffer 1
+    --if k1_pressed and k2_pressed then
+      --softcut.buffer_clear_channel(1) -- don't clear both buffers but only buffer 1
+    if k1_pressed and n == 3 and z == 1 then
+      k1_pressed = true
+      info = true
+      garden = false
+      dirtyscreen = true
     else
+      k1_pressed = false
+      info = false
+      garden = false
       is_recording = not is_recording
       toggle_rec()
     end
   end
 end
 
+function info_here()
+  if info == true then
+   display_note = false
+   display_exl = false
+  end
+  dirtyscreen = true
+ end
+
 -- GUI
 function redraw()
   screen.clear()
   screen.move(10, 50)
+  screen.font_face(1)
+  screen.font_size(8)
   screen.text("pos: ")
   screen.move(118, 50)
   screen.text_right(params:string("loop_start"))
@@ -1079,10 +1099,33 @@ function redraw()
     screen.text_center("good boi")
     current_bird = "awesomebird"
   elseif brd_change =="great tit" then
+    if info == true then
+      display_note = false
+      display_exl = false
+      screen.clear()
+      screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/great_tit_info.png", 0, 0)
+      screen.move(50,9)
+      screen.font_size(11)
+      screen.font_face(15)
+      screen.text("great")
+      screen.move(50,21)
+      screen.text("tit")
+      screen.move(50,30)
+      screen.font_size(8)
+      screen.font_face(1)
+      screen.text("blessed with a big")
+      screen.move(50,40)
+      screen.text("repertoire, yet is")
+      screen.move(0,50)
+      screen.text("most known for it's signature")
+      screen.move(0,60)
+      screen.text("couplets of sweet tee-cher!")
+    elseif info == false then  
     screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/great_tit.png", 38, 18)
     screen.move(65, 10)
     screen.text_center("great tit")
     current_bird = "great tit"
+    end
   elseif brd_change =="finch" then
     screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/chaffinch.png", 38, 18)
     screen.move(65, 10)
@@ -1109,10 +1152,34 @@ function redraw()
     screen.text_center("euroasian blackbird")
     current_bird = "blackbird"
   elseif brd_change == "wren" then --- this is new use it at every brd change!
+    if info == true then
+      display_note = false
+      display_exl = false
+      screen.clear()
+      print("you are talking to wren")
+      screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/wren_info.png", 0, 0)
+      screen.move(50,10)
+      screen.font_size(11)
+      screen.font_face(15)
+      screen.text("euroasian")
+      screen.move(50,20)
+      screen.text("wren")
+      screen.move(50,30)
+      screen.font_size(8)
+      screen.font_face(1)
+      screen.text("although small")
+      screen.move(50,40)
+      screen.text("in size the wren")
+      screen.move(0,50)
+      screen.text("is loud. full of trills and long")
+      screen.move(0,60)
+      screen.text("verses with rapid-fire bursts.")
+    elseif info == false then
     screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/wren1.png", 38, 20)
     screen.move(65, 10)
     screen.text_center("euroasian wren")
     current_bird = "wren"
+    end
   end
   if display_note then
     screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/note.png", 90, 20)
@@ -1125,6 +1192,11 @@ function redraw()
     screen.clear()
     screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/garden2.png", 0, 0)
   elseif garden == false then
+    brd_change = current_bird
+  end
+  if info == true then
+    print("I will showcase info")
+  elseif info == false then
     brd_change = current_bird
   end
   screen.update()
@@ -1207,16 +1279,6 @@ function cancel_all() -- stops the sequence and clocks
   clock.cancel(active_bird)
   lat:stop()
 end
-
-
---UNUSED--
---[[function away() -- whatever the current bird is  #birds it will cancel the clock using the ids
-  if play_bird == 1 then
-    play_bird = 1
-    elseif current_bird == current_bird then
-    clock.cancel(ids[current_bird])
-  end
-end]]
     
   -- LATTICE 
   -- function to start the lattice occupied by one sprocket which calls for the function rand_bird() and sets the division of change
