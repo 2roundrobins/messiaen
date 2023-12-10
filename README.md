@@ -25,7 +25,7 @@ or
 in maiden type:
 
 ```
-;install https://github.com/2roundrobins/massiaen
+;install https://github.com/2roundrobins/messiaen
 ```
 
 
