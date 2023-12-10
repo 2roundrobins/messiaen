@@ -1,5 +1,6 @@
-# massiaen BETA v0.1
+# massiaen BETA v0.2
  norns script based on birdsong
+
 
 single buffer delay / looper for mimicking birdsong
 this is far from finished and I intend to make this at least somewhat workable
@@ -10,7 +11,7 @@ but here is what you need if you want to test;
 
 **required**
 
-- [norns](https://github.com/p3r7/awesome-monome-norns) (220802 or later)
+- [norns](https://github.com/p3r7/awesome-monome-norns) (231114 or later)
   - **the required norns version is recent, please be sure that your norns is up-to-date before launching**
 
 
@@ -20,7 +21,7 @@ install directly from gitHub
 
 or
 
-in the maiden type:
+in maiden type:
 
 ```
 ;install https://github.com/2roundrobins/massiaen
@@ -29,18 +30,54 @@ in the maiden type:
 
 ## start
 
-recommended: luanch the script from the norns [SELECT](https://monome.org/docs/norns/play/#select) menu.
+recommended: launch the script from the norns [SELECT](https://monome.org/docs/norns/play/#select) menu.
 
 ## controls
 
+E1 change that bird! 
+E2 chirp size
+E3 chirp volume
+
+K1 is used as combo key
+K2 it sings
+K3 it listens (!)
+K1+K2 toggle info
+K1+K3 toggle garden
+
+## instructions 
+
+main gui so you can have your bird buddy with you
+
 ### recording
 
-start by recording something into the buffer. do this by pressing K3 and you'll see that your birdie will get an exlamation mark - this mean the bird is listening. you can record a sound into it and press K3 again. doing this, you have now stored the sound. turn E3 and you will hear your verry short loop. you can also turn E2 to change the position of the micro loop. 
+start by recording something into the buffer. do this by pressing K3 and you'll see that your birdie will get an exlamation mark - this mean the bird is attentive and listening. you can record any sound into it and press K3 again. doing this, you have now stored a very short snipped of sound. 
 
 ### playing
 
-press K2 and the bird will start singing random song based on it's species. you can stop the playing by pressing K2 again. by moving E1 you can change the bird species and the birdsong. 
+press K2 and the bird will start singing a random song based on it's species repertoire. you can stop the playing by pressing K2 again. by moving E1 you can change the bird species and the corresponding birdsong. 
 
-### adding ambience
+### bird controls
 
-by pressing K1 you can add "plant" a forest and put your bird in a habitat. you can also change the habitat in the PARAMs menu.
+chirp sound can be slightly moved. this is the recorded material, so if you want it to change its timbre of the loop you can do so by changing the possition using E2. volume control is controlled by moving E3. 
+
+### bird info
+each birdsong has its own description that will hopefully help you understand the wacky rate changes. you can initiate this by pressing K1 and K2. 
+
+## params
+
+there are a couple of extra goodies in the param section of norns. there you can change a couple of parameters, like;
+
+### bird voice
+change the chosen bird, and it's song shape (cuttoff, volume)
+
+### chirp material
+basically your recorded material. you can push for seed being audiable, which will let you hear the whole recorded loop if you so choose. you can change this recorded loop by changing the loop size etc.
+
+### tranform birds (forthcoming)
+ignore this
+
+### garden (forthcoming)
+still in early works, but the idea here is that you can have multiple birds singing to you. if you want to test this first go to bird choir and choose your birdy friends. you can attract the birds to you garden by choosing "yes" on the attract option. you can also toggle garden by pressing the key combo K1 + K3
+
+## forest 
+here you can change the ambience file by loading your own enviroment. you can turn off the enviromental sounds by turning to "no" on the plant forest option.
