@@ -33,6 +33,21 @@
 
 bird = include ("lib/birds") --2sacha: we will add this for the libs yea?
 
+--------------- TEST ZONE -----------
+
+test_bird = {}
+test_bird[1] = {
+  {r = 0, d = 0.2, l = 0, pb = 0.1},
+  {r = 6, d = 0.13, l = 0.5, pb = 0},
+  {r = 0, d = 0.02, l = 0, pb = 0},
+  {r = 1, d = 0.18, l = 0.7, pb = 0},
+  {r = 0, d = 0.2, l = 0},
+  {r = 6, d = 0.13, l = 0.5, pb = 0},
+  {r = 0, d = 0.02, l = 0},
+  {r = 1, d = 0.18, l = 0.7, pb = 0},
+  {r = 0, d = 0.2, l = 0}
+}
+
 -------- VARIABLES --------
 
 -- bird variables
@@ -172,6 +187,27 @@ function ntor(n)
   return math.pow(2, n / 12)
 end
 
+--[[
+
+scenario 1: playing single bird
+
+-- here sc voice 1 will be used
+
+
+scenario 2: playing garden
+
+-- bird 1: wren --> sc voice 1
+-- bird 2: robin --> sc voice 2
+-- bird 3: none
+-- bird 4: tit --> sc voice 4
+-- bird 5: none
+
+
+-- garden: pan, cut, rq, level fixed pos. with global params for level and cut (rel changes)
+
+
+]]
+
 -- the ultimate ultra super bird clocking function, hell yeah.
 function play_birdsongs(bird, voice) --@andy: we need a way of dynamically assigning birds to the softcut voices... 
   local voice = voice or 1 -- ... so if no voice arg is present softcut voice 1 is default
@@ -182,7 +218,9 @@ function play_birdsongs(bird, voice) --@andy: we need a way of dynamically assig
     for i = 1, #bird[song] do
       local current_note = bird[song][i]
       local rate = ntor(current_note.r) * 3
+      local slew = current_note.pb
       softcut.rate(voice, rate)
+      softcut.rate_slew(voice, slew)
       clock.sleep(current_note.d)
     end
     softcut.level(voice, 0)
@@ -191,7 +229,7 @@ function play_birdsongs(bird, voice) --@andy: we need a way of dynamically assig
 end
 
 -- call or change a birdsong
-function call_bird(bird_name)
+function call_bird(bird_name) -- bird name corresponds to the bird table in lib e.g. bird.wren
   if current_bird_clock ~= nil then
     clock.cancel(current_bird_clock)
   end
@@ -210,7 +248,7 @@ function stop_bird(voice)
   if current_bird_clock ~= nil then
     clock.cancel(current_bird_clock)
   end
-  softcut.level(voice, 0)
+  softcut.level(voice, 0) -- fail safe to ensure that the bird will be silent.
 end
 
 -- garden
@@ -230,9 +268,12 @@ function call_garden_birds()
   end
   -- activate birds
   clock.run(function()
+    sc_garden_settings()
     for i = 1, 5 do
-      clock.sleep(math.random(1, 8))
-      garden_bird_clock[i] = clock.run(play_birdsongs, bird_tab[params:get("friendly_visitor_"..i)], i)
+      clock.sleep(math.random(1, 4))
+      if params:get("friendly_visitor_"..i) > 1 then -- because 1 will be "none"
+        garden_bird_clock[i] = clock.run(play_birdsongs, bird_tab[params:get("friendly_visitor_"..i)], i)
+      end
     end
   end)
 end
@@ -251,9 +292,14 @@ function set_random_bird()
   params:set("chosen_bird", val)
 end
 
-function toggle_transform()
-  -- TODO
+g_global_level = 1 -- (range 0 - 1)
+function sc_garden_settings()
+  softcut.level(1, 0.7 * g_global_level) --idea
+  -- etc-
 end
+
+
+
 
 
 
@@ -337,10 +383,10 @@ function init()
   params:add_control("bird_loop_start", "bird voice start", controlspec.new(0, MAX_LOOP - 0.01, 'lin', 0.01, 0, "s"))
   params:set_action("bird_loop_start", function() set_loop() dirtyscreen = true end)
 
-  params:add_control("bird_loop_size", "bird voice start", controlspec.new(0, MAX_LOOP - 0.01, 'lin', 0.01, 0, "s"))
+  params:add_control("bird_loop_size", "bird voice start", controlspec.new(0, MAX_LOOP - 0.01, 'lin', 0.01, 0, "s")) -- TODO:
   --params:set_action("bird_loop_size", function() set_loop() dirtyscreen = true end)
 
-  -- transform
+  -- transform (prob remove this right?)
   params:add_separator("transform birds")
   
   params:add_option("transform", "start the party?", {"no", "yes"}, 1)
@@ -350,7 +396,7 @@ function init()
   params:add_separator("garden", "garden")
   params:add_group("bird_choir", "bird choir", 5)
   for i = 1, 5 do
-    params:add_option("friendly_visitor_"..i, "friendly visitor "..i, bird.names, 1)
+    params:add_option("friendly_visitor_"..i, "friendly visitor "..i, bird.names, 1) -- need new table with "none" and "seed"
   end
    params:add_option("summon_birds", "attract?", {"no", "yes"}, 1)
    params:set_action("summon_birds", function(val) garden_is_planted = val == 2 and true or false toggle_garden() end)
@@ -428,7 +474,7 @@ function redraw()
     screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/garden2.png", 0, 0)
   else
     screen.move(10, 50)
-    screen.font_face(1) -- 1 is default, can remove
+    screen.font_face(1)
     screen.font_size(8)
     screen.text("pos: ")
     screen.move(118, 50)
@@ -447,9 +493,13 @@ function redraw()
     end
     
     if active_bird_name == "weird" then
-      screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/weird1.png", 38, 18)
-      screen.move(65, 10)
-      screen.text_center("weird boi")
+      if info then
+        --bird.display_info(active_bird_name)
+      else
+        screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/weird1.png", 38, 18)
+        screen.move(65, 10)
+        screen.text_center("weird boi")
+      end
     elseif active_bird_name == "awesomebird" then
       screen.display_png(_path.code .. "/massiaen/assets/brd_pngs/awesome1.png", 38, 18)
       screen.move(65, 10)
@@ -540,36 +590,4 @@ function screen_redraw()
     redraw()
     dirtyscreen = false
   end
-end
-
---------------- TEST ZONE -----------
-
-gt_1 = {
-  {r = 0, d = 0.2, l = 0, pb = 0.1},
-  {r = 6, d = 0.13, l = 0.5, pb = 0},
-  {r = 0, d = 0.02, l = 0},
-  {r = 1, d = 0.18, l = 0.7, pb = 0},
-  {r = 0, d = 0.2, l = 0},
-  {r = 6, d = 0.13, l = 0.5, pb = 0},
-  {r = 0, d = 0.02, l = 0},
-  {r = 1, d = 0.18, l = 0.7, pb = 0},
-  {r = 0, d = 0.2, l = 0},
-  
-}
-
-function play_notes(note_table)
-    for i = 1, #note_table do
-      local current_note = note_table[i]
-      local rate = ntor(current_note.r) * 3
-      softcut.rate(1, rate)
-      softcut.level(1, current_note.l or bird_level)
-      if current_note.pb then
-        local pitch_bend = current_note.pb
-        if pitch_bend ~= 0 then
-          local target_rate = pitch_bend
-          softcut.rate_slew_time(1, target_rate)
-        end
-      end
-      clock.sleep(current_note.d)
-    end
 end
