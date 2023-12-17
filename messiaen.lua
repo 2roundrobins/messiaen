@@ -49,7 +49,7 @@ for i = 1, NUM_BIRDS do
   bird_voice[i].pan = 0
   bird_voice[i].cutoff = 18000
   bird_voice[i].filter_q = 4
-  bird_voice[i].pos = 6 + (i - 1) -- position for playback on buffer 1
+  bird_voice[i].pos = 6 -- + (i - 1) -- position for playback on buffer 1 TODO: decide whether the birds have individual buffers or not. me think yes.
 end
 
 -- seed variables (rec voice)
@@ -66,7 +66,7 @@ garden_is_planted = false
 default_forest = "" -- TODO: add path here
 
 -- sofutcut varables
-bird_loop_size = 0.02
+bird_loop_size = 0.5
 REC_LOOP_SIZE = 4
 FADE_TIME = 0.01 
 MAX_BUFFER = 350
@@ -140,13 +140,12 @@ function toggle_forest()
 end
 
 function grab_seed()
-  print("seed grabbed")
   softcut.query_position(seed_voice)
   is_memorizing = true
   dirtyscreen = true
   clock.run(function()
     clock.sleep(0.5)
-    softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[1].pos, bird_loop_size, FADE_TIME)
+    softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[1].pos, bird_loop_size, FADE_TIME) -- need to copy to the other bird buffers too
     is_memorizing = false
     dirtyscreen = true
   end)
@@ -207,18 +206,26 @@ function call_garden_birds()
   -- cancel active bird if singing
   if current_bird_clock ~= nil then
     clock.cancel(current_bird_clock)
+    bird_is_singing = false
   end
-  -- activate birds
+  -- call main bird
+  call_bird(bird_tab[params:get("main_bird")])
+  -- call visitors
   clock.run(function()
-    for i = 1, 5 do
+    for i = 1, 3 do
       clock.sleep(math.random(2, 8))
-      garden_bird_clock[i] = clock.run(play_birdsongs, bird_tab[params:get("friendly_visitor_"..i)], i)
+      local visitor = params:get("friendly_visitor_"..i)
+      garden_bird_clock[i] = clock.run(play_birdsongs, bird_tab[visitor], i + 1)
     end
   end)
 end
 
 function stop_garden_birds()
-  for i = 1, 5 do
+  if current_bird_clock ~= nil then
+    clock.cancel(current_bird_clock)
+    bird_is_singing = false
+  end
+  for i = 1, 3 do
     if garden_bird_clock[i] ~= nil then
       clock.cancel(garden_bird_clock[i])
     end
@@ -238,7 +245,7 @@ function init()
   for i = 1, NUM_BIRDS do -- softcut voices 1 - 4
     softcut.enable(i, 1)
     softcut.buffer(i, 1)
-    softcut.level(i, 0.6)
+    softcut.level(i, 0)
     softcut.pan(i, 0)
     softcut.rate(i, 1.0)
     softcut.loop(i, 1)
@@ -270,8 +277,8 @@ function init()
   -- set levels
   softcut.level(seed_voice, 0)
   softcut.pan(seed_voice, 0)
-  softcut.rec_level(seed_voice, 1) -- constantly recording
-  softcut.pre_level(seed_voice, 0) -- and overwriting
+  softcut.rec_level(seed_voice, 1)
+  softcut.pre_level(seed_voice, 0)
   -- set loop
   softcut.rate(seed_voice, 1)
   softcut.loop(seed_voice, 1)
@@ -324,9 +331,15 @@ function init()
   for i = 1, 3 do
     params:add_option("friendly_visitor_"..i, "friend "..i, bird.names, 1)
   end
-  params:add_option("attract_birds", "attract?", {"no", "yes"}, 1)
-  params:set_action("attract_birds", function(val) garden_is_planted = val == 2 and true or false toggle_garden() end)
-  
+  params:add_option("invite_birds", "invite friends", {"no", "yes"}, 1)
+  params:set_action("invite_birds", function(val) garden_is_planted = val == 2 and true or false toggle_garden() end)
+
+  params:add_option("feed_birds", "feed birds", {"simultanious", "sequential", "random"}, 1)
+  params:set_action("feed_birds", function(val) feed_mode = val end)
+
+  params:add_option("randomize_bird_params", "randomize parameters", {"no", "yes"}, 1)
+  params:set_action("randomize_bird_params", function(val)  end)
+
   -- forest parameters
   params:add_separator("forest_params", "plant forest or garden")
   params:add_file("load_forest", "> load enviroment", "")
@@ -384,6 +397,9 @@ end
 function enc(n, d)
   if garden_is_planted then
     -- maybe the encoders can do fun things while in garden mode?
+    -- idea: encoders as macro controls
+    -- ENC2 chnages the pan positions (global spread like in concrete).
+    -- ENC3 chnanges cutoff values to emulate distance.
   else
     if n == 1 then
       params:delta("main_bird", d)
