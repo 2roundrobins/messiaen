@@ -47,8 +47,8 @@ for i = 1, NUM_BIRDS do
   bird_voice[i].name = ""
   bird_voice[i].level = 0
   bird_voice[i].pan = 0
-  bird_voice[i].cutoff = 18000
-  bird_voice[i].filter_q = 4
+  bird_voice[i].cutoff = 18500
+  bird_voice[i].filter_q = 2
   bird_voice[i].pos = 6 -- + (i - 1) -- position for playback on buffer 1 TODO: decide whether the birds have individual buffers or not. me think yes.
 end
 
@@ -63,7 +63,7 @@ forest_voice = 6
 forest_level = 0.3
 forest_is_planted = true
 garden_is_planted = false
-default_forest = "" -- TODO: add path here
+default_forest = "/home/we/dust/code/messiaen/assets/forests/robinwren.wav" 
 
 -- sofutcut varables
 bird_loop_size = 0.5
@@ -107,7 +107,7 @@ function play_birdsongs(bird, voice)
       clock.sleep(current_note.d)
     end
     softcut.level(voice, 0)
-    clock.sleep(math.random(1) + 1.2)
+    clock.sleep(math.random(1) + 2.2)
   end
 end
 
@@ -290,13 +290,13 @@ function init()
   -- forest playback -- softcut voice 6
   softcut.enable(forest_voice, 1) 
   softcut.buffer(forest_voice, 2)
-  softcut.level(forest_voice, 0.1)
+  softcut.level(forest_voice, 0.5)
   softcut.rate(forest_voice, 1)
   softcut.loop(forest_voice, 1)
   softcut.loop_start(forest_voice, 0)
   softcut.loop_end(forest_voice, MAX_BUFFER)
   softcut.position(forest_voice, 1)
-  softcut.play(forest_voice, 0)
+  softcut.play(forest_voice, 1)
   softcut.fade_time(forest_voice, 2)
 
   -- callbacks
@@ -311,13 +311,13 @@ function init()
   params:add_control("bird_level", "level", controlspec.new(0, 1, 'lin', 0, 0.5), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
   params:set_action("bird_level", function(val) bird_voice[main_bird_voice].level = val set_bird_level() dirtyscreen = true end)
 
-  params:add_control("bird_mood", "mood", controlspec.new(0.02, 1, 'lin', 0, 0.2), function(param) return (round_form(util.linlin(0.02, 1, 0, 100, param:get()), 1, "%")) end)
+  params:add_control("bird_mood", "feistiness", controlspec.new(0.01, 1, 'lin', 0, 0.1), function(param) return (round_form(util.linlin(0.02, 1, 0, 100, param:get()), 1, "%")) end)
   params:set_action("bird_mood", function(val) bird_loop_size = val softcut.loop_end(main_bird_voice, bird_voice[main_bird_voice].pos + bird_loop_size) end)
 
   params:add_control("bird_pan", "position", controlspec.new(-1, 1, 'lin', 0, 0, ""))
   params:set_action("bird_pan", function(val) bird_voice[main_bird_voice].pan = val softcut.pan(main_bird_voice, val) end)
 
-  params:add_control("bird_cutoff", "distance", controlspec.new(20000, 240, 'exp', 0, 17000), function(param) return (round_form(util.explin(240, 20000, 100, 0, param:get()), 1, "%")) end)
+  params:add_control("bird_cutoff", "distance", controlspec.new(20000, 240, 'exp', 0, 18500), function(param) return (round_form(util.explin(240, 20000, 100, 30, param:get()), 1, "%")) end)
   params:set_action("bird_cutoff", function(x) bird_voice[main_bird_voice].cutoff = x softcut.post_filter_fc(main_bird_voice, x) end)
 
   -- rec parameters
@@ -353,7 +353,7 @@ function init()
   
   params:bang()
 
-  --params:set("load_forest", default_forest)
+  params:set("load_forest", default_forest)
 
   -- metros
   screenredrawtimer = metro.init(function() screen_redraw() end, 1/15, -1)
@@ -404,7 +404,7 @@ function enc(n, d)
     if n == 1 then
       params:delta("main_bird", d)
     elseif n == 2 then
-      -- what here?
+      params:delta("bird_cutoff", d)
     elseif n == 3 then
       params:delta("bird_level", d)
     end
@@ -447,11 +447,11 @@ function redraw()
   else
     screen.move(10, 50)
     screen.font_size(8)
-    --screen.text("pos: ")
+    screen.text("area: ")
     screen.move(118, 50)
-    --screen.text_right(params:string("bird_loop_start"))
+    screen.text_right(params:string("bird_cutoff"))
     screen.move(10, 60)
-    screen.text("level: ")
+    screen.text("chirp: ")
     screen.move(118, 60)
     screen.text_right(params:string("bird_level"))
 
