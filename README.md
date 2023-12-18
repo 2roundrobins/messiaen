@@ -1,6 +1,7 @@
 # massiaen BETA v0.2
  norns script based on birdsong
 
+![main_gui2](/assets/doc/main_gui.png)
 
 single buffer delay / looper for mimicking birdsong
 this is far from finished and I intend to make this at least somewhat workable
@@ -24,7 +25,7 @@ or
 in maiden type:
 
 ```
-;install https://github.com/2roundrobins/massiaen
+;install https://github.com/2roundrobins/messiaen
 ```
 
 
@@ -45,8 +46,8 @@ K1+K2 toggle info
 K1+K3 toggle garden
 
 ## instructions 
-
-main gui so you can have your bird buddy with you
+![bird_gui2](/assets/doc/bird_gui.png)
+main gui so you can look at this amazing 8bit bird art!
 
 ### recording
 
@@ -61,6 +62,7 @@ press K2 and the bird will start singing a random song based on it's species rep
 chirp sound can be slightly moved. this is the recorded material, so if you want it to change its timbre of the loop you can do so by changing the possition using E2. volume control is controlled by moving E3. 
 
 ### bird info
+![bird_info_gui](/assets/doc/bird_info_gui.png)
 each birdsong has its own description that will hopefully help you understand the wacky rate changes. you can initiate this by pressing K1 and K2. 
 
 ## params
@@ -77,7 +79,8 @@ basically your recorded material. you can push for seed being audiable, which wi
 ignore this
 
 ### garden (forthcoming)
+![garden_gui](/assets/doc/garden_gui2.png)
 still in early works, but the idea here is that you can have multiple birds singing to you. if you want to test this first go to bird choir and choose your birdy friends. you can attract the birds to you garden by choosing "yes" on the attract option. you can also toggle garden by pressing the key combo K1 + K3
 
-## forest 
+### forest 
 here you can change the ambience file by loading your own enviroment. you can turn off the enviromental sounds by turning to "no" on the plant forest option.
