@@ -28,7 +28,7 @@
 --- 
 
 ---------------------------------------------------------------------------
--- TODO: fix garden mode
+-- TODO: fix garden mode (rogue bird @ garden exit)
 -- TODO: flip bird image with direction
 -- TODO: position main screen parameters according to ENC2 / ENC3
 -- TOOD: position birds in garden mode and store the params in temp file.
@@ -466,8 +466,7 @@ function key(n, z)
     end
   elseif n == 3 and z == 1 then
     if k1_pressed then
-      garden_is_planted = not garden_is_planted
-      toggle_garden()
+      params:set("invite_birds", garden_is_planted and 1 or 2)
     else
       --TODO: flip bird image!
       direction = direction == 1 and -1 or 1
