@@ -12,18 +12,18 @@
 --- ▼▼▼ instructions below ▼▼▼
 ---
 --- E1 change that bird! 
---- E2 chirp size
+--- E2 area size
 --- E3 chirp volume
 ---
 --- K1 combo
 --- K2 it sings
---- K3 it listens (!)
+--- K3 it flips
 --- K1+K2 toggle info
 --- K1+K3 toggle garden
 ---
 --- play something for the bird
---- press K3 and the active bird
---- will listen (!)
+--- and the active bird shall
+--- listen (!)
 --- make it sing by pressing k2.
 --- 
 
@@ -484,7 +484,7 @@ function redraw()
     screen.move(0, 50)
     screen.font_size(8)
     screen.text("area")
-    screen.move(10, 60)
+    screen.move(17, 60)
     screen.text_right(params:string("main_bird_cutoff"))
     screen.move(126, 50)
     screen.text_right("chirp")
