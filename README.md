@@ -36,12 +36,12 @@ recommended: launch the script from the norns [SELECT](https://monome.org/docs/n
 ## controls
 
 E1 change that bird! 
-E2 chirp size
+E2 area position
 E3 chirp volume
 
 K1 is used as combo key
 K2 it sings
-K3 it listens (!)
+K3 it flips
 K1+K2 toggle info
 K1+K3 toggle garden
 
@@ -51,7 +51,7 @@ main gui so you can look at this amazing 8bit bird art!
 
 ### recording
 
-start by recording something into the buffer. do this by pressing K3 and you'll see that your birdie will get an exlamation mark - this mean the bird is attentive and listening. you can record any sound into it and press K3 again. doing this, you have now stored a very short snipped of sound. 
+recording is now done by exceeding the recording threshold or by playing your instrument a bit louder. by default it's set to -12.0db, but you can freely change this by visiting the PARAMS.
 
 ### playing
 
