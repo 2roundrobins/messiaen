@@ -478,21 +478,21 @@ end
 function redraw()
   screen.clear()
   if garden_is_planted then
-    screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/garden2.png", 0, 0)
+    screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/garden.png", 0, 0)
   else
     local main_bird_name = bird_voice[main_bird_voice].name
-    screen.move(10, 50)
+    screen.move(0, 50)
     screen.font_size(8)
-    screen.text("area: ")
-    screen.move(118, 50)
-    screen.text_right(params:string("main_bird_cutoff"))
+    screen.text("area")
     screen.move(10, 60)
-    screen.text("chirp: ")
-    screen.move(118, 60)
+    screen.text_right(params:string("main_bird_cutoff"))
+    screen.move(126, 50)
+    screen.text_right("chirp")
+    screen.move(126, 60)
     screen.text_right(params:string("main_bird_level"))
 
     if bird_is_singing and not info then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/note.png", 90, 20)
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/note.png", 100, 20)
     end
     
     if is_memorizing and not info then
@@ -515,7 +515,7 @@ function redraw()
     elseif main_bird_name =="green finch" then
       if info == true then
         screen.clear()
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/green_finch_info.png", 0, 0)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch_info.png", 0, 0)
         screen.move(50,9)
         screen.font_size(11)
         screen.font_face(15)
@@ -532,15 +532,19 @@ function redraw()
         screen.text("by its melodious mellow trills")
         screen.move(0,60)
         screen.text("and a slow wheeze like dweez.")
+      elseif info == false and bird_is_singing == true then
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch_sin.png", 0, 6)
+      screen.move(65, 10)
+      screen.text_center("green finch")
       elseif info == false then  
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/green_finch.png", 38, 18)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch1.png", 0, 6)
         screen.move(65, 10)
         screen.text_center("green finch")
       end
     elseif main_bird_name == "willow warbler" then
       if info == true then
         screen.clear()
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willow_warbler_info.png", 0, 0)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willowwarbler_info.png", 0, 0)
         screen.move(50,9)
         screen.font_size(11)
         screen.font_face(15)
@@ -557,40 +561,19 @@ function redraw()
         screen.text("melody and a calm but careful")
         screen.move(0,60)
         screen.text("sounding fragility to its voice.")
+      elseif info == false and bird_is_singing == true then
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willowwarbler_sin.png", 0, 8)
+      screen.move(65, 10)
+      screen.text_center("willow warbler")
       elseif info == false then
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willow_warbler.png", 38, 18)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willowwarbler1.png", 0, 8)
         screen.move(65, 10)
         screen.text_center("willow warbler")
       end
---[[    elseif main_bird_name =="nuthach" then
-      if info == true then
-        screen.clear()
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/nuthach_info.png", 0, 0)
-        screen.move(50,9)
-        screen.font_size(11)
-        screen.font_face(15)
-        screen.text("nuthach")
-        screen.move(50,20)
-        screen.font_size(8)
-        screen.font_face(1)
-        screen.text("this neurotic")
-        screen.move(50,30)
-        screen.text("tree crawler")
-        screen.move(50,40)
-        screen.text("demands your")
-        screen.move(0,50)
-        screen.text("attention with loud & liquid")
-         screen.move(0,60)
-        screen.text("k'wip's and sharp wi-wi-wi's.")
-      elseif info == false then
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/nuthach.png", 38, 18)
-        screen.move(65, 10)
-        screen.text_center("nuthach")
-      end]]
     elseif main_bird_name =="great tit" then
       if info == true then
         screen.clear()
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/great_tit_info.png", 0, 0)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit_info.png", 0, 0)
         screen.move(50,9)
         screen.font_size(11)
         screen.font_face(15)
@@ -607,8 +590,12 @@ function redraw()
         screen.text("most known for its signature")
         screen.move(0,60)
         screen.text("couplets of sweet tee-cher!")
+      elseif info == false and bird_is_singing == true then
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit_sin.png", -4, 6)
+      screen.move(65, 10)
+      screen.text_center("great tit")
       elseif info == false then  
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/great_tit.png", 38, 18)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit1.png", -4, 6)
         screen.move(65, 10)
         screen.text_center("great tit")
       end
@@ -632,36 +619,15 @@ function redraw()
         screen.text("chaffinch is confident with")
          screen.move(0,60)
         screen.text("its bold & theatrical ending.")
+      elseif info == false and bird_is_singing == true then
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch_sin.png", 0, 8)
+      screen.move(65, 10)
+      screen.text_center("chaffinch")
       elseif info == false then
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch.png", 38, 18)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch1.png", 0, 8)
         screen.move(65, 10)
         screen.text_center("chaffinch")
       end
---[[    elseif main_bird_name == "trush" then
-      if info == true then
-        screen.clear()
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/trush_info.png", 0, 0)
-        screen.move(50,9)
-        screen.font_size(11)
-        screen.font_face(15)
-        screen.text("song")
-        screen.move(50,21)
-        screen.text("trush")
-        screen.move(50,30)
-        screen.font_size(8)
-        screen.font_face(1)
-        screen.text("armed with short")
-        screen.move(50,40)
-        screen.text("song phrases")
-        screen.move(0,50)
-        screen.text("it repeats them with a trial")
-        screen.move(0,60)
-        screen.text("and error like strategy.")
-      elseif info == false then
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/trush1.png", 38, 18)
-        screen.move(65, 10)
-        screen.text_center("song thrush")
-      end]]
     elseif main_bird_name == "robin" then
       if info == true then
         screen.clear()
@@ -681,37 +647,16 @@ function redraw()
         screen.move(0,50)
         screen.text("melodies are heard loudly")
         screen.move(0,60)
-        screen.text("in the calmness of winter")
+        screen.text("in the calmness of winter.")
+      elseif info == false and bird_is_singing == true then
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/robin_sin.png", 0, 8)
+      screen.move(65, 10)
+      screen.text_center("european robin")
       elseif info == false then
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/robin1.png", 38, 20)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/robin1.png", 0, 8)
         screen.move(65, 10)
         screen.text_center("european robin")
       end
---[[    elseif main_bird_name =="nightingale" then
-      if info == true then
-        screen.clear()
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/nightingale_info.png", 0, 0)
-        screen.move(50,9)
-        screen.font_size(11)
-        screen.font_face(15)
-        screen.text("nightingale")
-        screen.move(50,20)
-        screen.font_size(8)
-        screen.font_face(1)
-        screen.text("heard in the")
-        screen.move(50,30)
-        screen.text("dead of night")
-        screen.move(50,40)
-        screen.text("it's impressive")
-        screen.move(0,50)
-        screen.text("rich and powerful repertoire")
-         screen.move(0,60)
-        screen.text("is worthy of anyones envy.")
-      elseif info == false then
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/gale1.png", 38, 20)
-        screen.move(65, 10)
-        screen.text_center("nightingale")
-      end]]
     elseif main_bird_name == "blackbird" then
       if info == true then
         screen.clear()
@@ -732,8 +677,12 @@ function redraw()
         screen.text("can improvise with a large")
         screen.move(0,60)
         screen.text("catalogue of complex beauty.")
+      elseif info == false and bird_is_singing == true then
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird_sin.png", 8, 8)
+      screen.move(65, 10)
+      screen.text_center("euroasian blackbird")
       elseif info == false then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird1.png", 38, 18)
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird1.png", 8, 8)
       screen.move(65, 10)
       screen.text_center("euroasian blackbird")
     end
@@ -757,14 +706,19 @@ function redraw()
         screen.text("is loud. full of trills and long")
         screen.move(0,60)
         screen.text("verses with rapid-fire bursts.")
+      elseif info == false and bird_is_singing == true then
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren_sin.png", 0, 8)
+      screen.move(65, 10)
+      screen.text_center("euroasian wren")
       else
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren1.png", 38, 20)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren1.png", 0,8)
         screen.move(65, 10)
         screen.text_center("euroasian wren")
       end
     end
   end
   screen.update()
+  screen.peek(0, 0, 128, 64)
 end
 -------- UTILITIES --------
 function r()
