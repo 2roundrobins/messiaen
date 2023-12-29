@@ -36,12 +36,12 @@ recommended: launch the script from the norns [SELECT](https://monome.org/docs/n
 ## controls
 
 E1 change that bird! 
-E2 chirp size
+E2 area position
 E3 chirp volume
 
 K1 is used as combo key
 K2 it sings
-K3 it listens (!)
+K3 it flips
 K1+K2 toggle info
 K1+K3 toggle garden
 
@@ -51,7 +51,7 @@ main gui so you can look at this amazing 8bit bird art!
 
 ### recording
 
-start by recording something into the buffer. do this by pressing K3 and you'll see that your birdie will get an exlamation mark - this mean the bird is attentive and listening. you can record any sound into it and press K3 again. doing this, you have now stored a very short snipped of sound. 
+recording is now done by exceeding the recording threshold or by playing your instrument a bit louder. by default it's set to -12.0db, but you can freely change this by visiting the PARAMS.
 
 ### playing
 
@@ -84,3 +84,8 @@ still in early works, but the idea here is that you can have multiple birds sing
 
 ### forest 
 here you can change the ambience file by loading your own enviroment. you can turn off the enviromental sounds by turning to "no" on the plant forest option.
+
+## future
+
+### adding birds
+a goal here is also to make messiaen a community driven script with adding birds with the upcoming updates. if you would like to add birds of your own and add them to the pile, then you can do that by following the guide in the birds library -- lib. you can share them by just opening an issue, stating which bird species and your gitHub name, so I can properly credit you in any upcoming updates. GUI illustration will also be provided from my side. 
