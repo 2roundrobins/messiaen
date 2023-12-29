@@ -87,9 +87,6 @@ area: the cutoff frequency
 ### recording
 change the recording threshold accordingly. by default it's -12db.
 
-### tranform birds (forthcoming)
-ignore this
-
 ### garden (forthcoming)
 ![garden_gui](/assets/doc/garden_gui2.png)
 still in early works, but the idea here is that you can have multiple birds singing to you. if you want to test this first select your bird friends in the birds section and position them to taste. you will be able to position the bird by turning the encouder "position birds" and it should position them throughout the garden space automatically (forthcoming). invite the birds by changing the option to "yes" and enjoy. you can change the song density if they are a bit too lively (this also works for main bird). feed birds (forthcoming).
