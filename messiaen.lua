@@ -498,7 +498,7 @@ function redraw()
     if is_memorizing and not info then
       screen.level(15)
       screen.font_size(16)
-      screen.move(108, 31)
+      screen.move(115, 31)
       screen.text("!")
     end
     
