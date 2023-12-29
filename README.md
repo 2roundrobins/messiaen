@@ -84,3 +84,8 @@ still in early works, but the idea here is that you can have multiple birds sing
 
 ### forest 
 here you can change the ambience file by loading your own enviroment. you can turn off the enviromental sounds by turning to "no" on the plant forest option.
+
+## future
+
+### adding birds
+a goal here is also to make messiaen a community driven script with adding birds with the upcoming updates. if you would like to add birds of your own and add them to the pile, then you can do that by following the guide in the birds library -- lib. you can share them by just opening an issue, stating which bird species and your gitHub name, so I can properly credit you in any upcoming updates. GUI illustration will also be provided from my side. 
