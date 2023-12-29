@@ -1,10 +1,12 @@
-# massiaen BETA v0.2
+# massiaen BETA v0.3
  norns script based on birdsong
 
 ![main_gui2](/assets/doc/main_gui.png)
 
 single buffer delay / looper for mimicking birdsong
-this is far from finished and I intend to make this at least somewhat workable
+@fellowfinch @sonocircuit with GUI @mechtai.
+
+**this is far from finished and I intend to make this at least somewhat workable**
 
 but here is what you need if you want to test;
 
@@ -36,7 +38,7 @@ recommended: launch the script from the norns [SELECT](https://monome.org/docs/n
 ## controls
 
 E1 change that bird! 
-E2 area position
+E2 mood position
 E3 chirp volume
 
 K1 is used as combo key
@@ -57,9 +59,13 @@ recording is now done by exceeding the recording threshold or by playing your in
 
 press K2 and the bird will start singing a random song based on it's species repertoire. you can stop the playing by pressing K2 again. by moving E1 you can change the bird species and the corresponding birdsong. 
 
-### bird controls
+### mood
 
-chirp sound can be slightly moved. this is the recorded material, so if you want it to change its timbre of the loop you can do so by changing the possition using E2. volume control is controlled by moving E3. 
+mood which can be changed by turning E2 is meant as birds feistiness. the higher the value, more feisty the bird will be. moving the value downword however shall make the birdsong a bit calmer and longer.
+
+### chirp
+
+this is the general volume control of the bird
 
 ### bird info
 ![bird_info_gui](/assets/doc/bird_info_gui.png)
@@ -69,18 +75,22 @@ each birdsong has its own description that will hopefully help you understand th
 
 there are a couple of extra goodies in the param section of norns. there you can change a couple of parameters, like;
 
-### bird voice
-change the chosen bird, and it's song shape (cuttoff, volume)
+### birds
+you can change the bird control values for your main bird (the one that is shown on the screen) and friendly visitors (birds that you can call through garden mode).
 
-### chirp material
-basically your recorded material. you can push for seed being audiable, which will let you hear the whole recorded loop if you so choose. you can change this recorded loop by changing the loop size etc.
+bird: change bird species
+level: change the volume
+mood: change the feistiness
+position: change the bird panning
+area: the cutoff frequency
 
-### tranform birds (forthcoming)
-ignore this
+### recording
+change the recording threshold accordingly. by default it's -12db.
 
 ### garden (forthcoming)
 ![garden_gui](/assets/doc/garden_gui2.png)
-still in early works, but the idea here is that you can have multiple birds singing to you. if you want to test this first go to bird choir and choose your birdy friends. you can attract the birds to you garden by choosing "yes" on the attract option. you can also toggle garden by pressing the key combo K1 + K3
+still in early works, but the idea here is that you can have multiple birds singing to you. if you want to test this first select your bird friends in the birds section and position them to taste. you will be able to position the bird by turning the encouder "position birds" and it should position them throughout the garden space automatically (forthcoming). invite the birds by changing the option to "yes" and enjoy. you can change the song density if they are a bit too lively (this also works for main bird). feed birds (forthcoming).
+you can also toggle garden by pressing the key combo K1 + K3 on the main screen.
 
 ### forest 
 here you can change the ambience file by loading your own enviroment. you can turn off the enviromental sounds by turning to "no" on the plant forest option.
