@@ -1,5 +1,5 @@
 --- messiaen v0.1 @fellowfinch
---- @sonocircuit
+--- @sonocircuit GUI @mechtai.
 --- llllllll.co/t/url
 --- 
 --- "birds are the first and
@@ -12,7 +12,7 @@
 --- ▼▼▼ instructions below ▼▼▼
 ---
 --- E1 change that bird! 
---- E2 area size
+--- E2 bird mood
 --- E3 chirp volume
 ---
 --- K1 combo
@@ -30,10 +30,10 @@
 ---------------------------------------------------------------------------
 -- TODO: fix garden mode (rogue bird @ garden exit)
 -- TODO: flip bird image with direction
--- TODO: position main screen parameters according to ENC2 / ENC3
 -- TOOD: position birds in garden mode and store the params in temp file.
 -- TODO: check buffer positions (copy mono working?)
 -- TODO: add feed birds option for garden
+-- TODO: check the weird octave shift
 ---------------------------------------------------------------------------
 _f = require 'filters'
 bird = include 'lib/birds'
@@ -51,7 +51,7 @@ NUM_BIRDS = 4
 bird_is_singing = false
 main_bird_voice = 1
 separation = 2.2
-direction = 0 
+direction = 1 
 
 bird_voice = {}
 for i = 1, NUM_BIRDS do
@@ -73,7 +73,7 @@ threshold_lower = 0
 
 -- forest variables
 forest_voice = 6
-forest_level = 0.3
+forest_level = 0.2
 forest_is_planted = true
 garden_is_planted = false
 default_forest = "/home/we/dust/code/messiaen/assets/forests/robinwren.wav" 
@@ -330,10 +330,10 @@ function init()
     params:add_option(bird_params[i].."_active", "bird", bird.names, 1)
     params:set_action(bird_params[i].."_active", function (idx) bird_voice[i].name = bird.names[idx] change_bird(bird_tab[idx]) dirtyscreen = true end)
 
-    params:add_control(bird_params[i].."_level", "level", controlspec.new(0, 1, 'lin', 0, 0.5), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
+    params:add_control(bird_params[i].."_level", "level", controlspec.new(0, 1, 'lin', 0, 0.4), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
     params:set_action(bird_params[i].."_level", function(val) bird_voice[i].level = val set_bird_level() dirtyscreen = true end)
 
-    params:add_control(bird_params[i].."_mood", "feistiness", controlspec.new(0.01, 1, 'lin', 0, 0.1), function(param) return (round_form(util.linlin(0.01, 1, 0, 100, param:get()), 1, "%")) end)
+    params:add_control(bird_params[i].."_mood", "mood", controlspec.new(0.01, 1, 'lin', 0, 0.38), function(param) return (round_form(util.linlin(0.01, 1, 0, 100, param:get()), 1, "%")) end)
     params:set_action(bird_params[i].."_mood", function(val) bird_voice[i].loop_size = val softcut.loop_end(i, bird_voice[i].pos + bird_voice[i].loop_size) end)
 
     params:add_control(bird_params[i].."_pan", "position", controlspec.new(-1, 1, 'lin', 0, 0, ""))
@@ -357,7 +357,7 @@ function init()
   params:add_option("position_birds", "position birds", {"no", "yes"}, 1)
   params:set_action("position_birds", function(val)  end)
 
-  params:add_control("bird_talk", "song density", controlspec.new(0, 5, 'lin', 0, 0), function(param) return (round_form(util.linlin(0, 5, 100, 0, param:get()), 1, "%")) end)
+  params:add_control("bird_talk", "song density", controlspec.new(0, 5, 'lin', 0, 2), function(param) return (round_form(util.linlin(0, 5, 100, 0, param:get()), 1, "%")) end)
   params:set_action("bird_talk", function(val) separation = val + 2.2 end)
 
   params:add_option("feed_birds", "feed birds", {"simultanious", "sequential", "random"}, 1)
@@ -371,7 +371,7 @@ function init()
   params:add_option("plant_forest", "plant?", {"no", "yes"}, 2)
   params:set_action("plant_forest", function(val) forest_is_planted = val == 2 and true or false toggle_forest() end)
 
-  params:add_control("forest_level", "intensity", controlspec.new(0, 1, 'lin', 0, 0.4), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
+  params:add_control("forest_level", "intensity", controlspec.new(0, 1, 'lin', 0, 0.3), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
   params:set_action("forest_level", function(val) forest_level = val softcut.level(forest_voice, val) end)
   
   params:bang()
@@ -438,7 +438,7 @@ function enc(n, d)
       end
     else
       if n == 2 then
-        params:delta("main_bird_cutoff", d)
+        params:delta("main_bird_mood", d)
       elseif n == 3 then
         params:delta("main_bird_level", d)
       end
@@ -483,9 +483,9 @@ function redraw()
     local main_bird_name = bird_voice[main_bird_voice].name
     screen.move(0, 50)
     screen.font_size(8)
-    screen.text("area")
+    screen.text("mood")
     screen.move(17, 60)
-    screen.text_right(params:string("main_bird_cutoff"))
+    screen.text_right(params:string("main_bird_mood"))
     screen.move(126, 50)
     screen.text_right("chirp")
     screen.move(126, 60)
