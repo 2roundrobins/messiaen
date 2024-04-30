@@ -29,11 +29,19 @@
 
 ---------------------------------------------------------------------------
 -- TODO: fix garden mode (rogue bird @ garden exit)
--- TODO: flip bird image with direction
 -- TOOD: position birds in garden mode and store the params in temp file.
 -- TODO: check buffer positions (copy mono working?)
 -- TODO: add feed birds option for garden
 -- TODO: check the weird octave shift
+-- TODO: Enhanced docs @andi
+-- TODO: Optimize file size @andi
+-- TODO: pan automation for active_bird in params (tree to tree)
+
+--MAYBE: Exclemation mark confusion
+
+--DONE: flip bird image with direction // this was scraped - it now just grabs seed
+--DONE: forest plant bug? non existent on my side
+
 ---------------------------------------------------------------------------
 _f = require 'filters'
 bird = include 'lib/birds'
@@ -66,10 +74,13 @@ for i = 1, NUM_BIRDS do
 end
 
 -- seed variables (rec voice)
+-- this is where we have our recording buffer, that is constantly listening
 seed_voice = 5 -- sofcut voice 5 
 seed_voice_pos = 1
 threshold_upper = 0
 threshold_lower = 0
+
+rec = 0
 
 -- forest variables
 forest_voice = 6
@@ -147,9 +158,15 @@ function toggle_forest()
   end
 end
 
+
+
+    
+
+
+--maybe we can use this in order to toggle record
 function grab_seed()
   softcut.query_position(seed_voice)
-  is_memorizing = true
+  is_memorizing = true -- maybe this?
   dirtyscreen = true
   clock.run(function()
     clock.sleep(MAX_SEED_LENGTH)
@@ -345,8 +362,12 @@ function init()
 
   -- rec parameters
   params:add_separator("bird_rec", "recording")
+
+  --params:add_option("rec_control", "threshold rec", {"yes", "no"}, 1)
+  --params:set_action("rec_control", function(val) grab_seed = val == 1 and true or false toggle_rec() end)
   params:add_control("rec_threshold", "threshold", controlspec.new(-20, 0, 'lin', 0, -12, "dB"))
   params:set_action("rec_threshold", function(val) threshold_upper = util.round((util.dbamp(val) / 10), 0.01) threshold_lower = threshold_upper * 0.6 end)
+
 
   -- garden parameters
   params:add_separator("garden", "garden")
@@ -377,6 +398,15 @@ function init()
   params:bang()
 
   params:set("load_forest", default_forest)
+  
+  --toggle rec? 
+--function toggle_rec()
+  --if rec = 1 then
+    --softcut.rec_level(1, 1)
+  --else
+    --grab_seed()
+  --end
+--end
 
   -- metros
   screenredrawtimer = metro.init(function() screen_redraw() end, 1/15, -1)
@@ -468,12 +498,13 @@ function key(n, z)
     if k1_pressed then
       params:set("invite_birds", garden_is_planted and 1 or 2)
     else
-      --TODO: flip bird image!
-      direction = direction == 1 and -1 or 1
+      grab_seed()
     end
   end
   dirtyscreen = true
 end
+
+
 
 function redraw()
   screen.clear()
