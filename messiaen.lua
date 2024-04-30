@@ -80,7 +80,6 @@ seed_voice_pos = 1
 threshold_upper = 0
 threshold_lower = 0
 
-rec = 0
 
 -- forest variables
 forest_voice = 6
@@ -163,10 +162,9 @@ end
     
 
 
---maybe we can use this in order to toggle record
 function grab_seed()
   softcut.query_position(seed_voice)
-  is_memorizing = true -- maybe this?
+  is_memorizing = true
   dirtyscreen = true
   clock.run(function()
     clock.sleep(MAX_SEED_LENGTH)
@@ -363,8 +361,6 @@ function init()
   -- rec parameters
   params:add_separator("bird_rec", "recording")
 
-  --params:add_option("rec_control", "threshold rec", {"yes", "no"}, 1)
-  --params:set_action("rec_control", function(val) grab_seed = val == 1 and true or false toggle_rec() end)
   params:add_control("rec_threshold", "threshold", controlspec.new(-20, 0, 'lin', 0, -12, "dB"))
   params:set_action("rec_threshold", function(val) threshold_upper = util.round((util.dbamp(val) / 10), 0.01) threshold_lower = threshold_upper * 0.6 end)
 
@@ -399,14 +395,6 @@ function init()
 
   params:set("load_forest", default_forest)
   
-  --toggle rec? 
---function toggle_rec()
-  --if rec = 1 then
-    --softcut.rec_level(1, 1)
-  --else
-    --grab_seed()
-  --end
---end
 
   -- metros
   screenredrawtimer = metro.init(function() screen_redraw() end, 1/15, -1)
@@ -498,7 +486,7 @@ function key(n, z)
     if k1_pressed then
       params:set("invite_birds", garden_is_planted and 1 or 2)
     else
-      grab_seed()
+      grab_seed() -- literally just calls so you dont have to bust your shitty synth playing for the bird to listen
     end
   end
   dirtyscreen = true
