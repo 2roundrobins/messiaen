@@ -31,7 +31,7 @@
 -- HOW TO DO?: position birds in garden mode and store the params in temp file. Q: shall the bird be repositioned automatically?
 -- TODO: pan automation for active_bird in params (tree to tree) -- hell yeah, let's add some lfos!
 
--- TODO: Exclemation mark confusion --> replace with png speaker waves for the americans
+-- TODO: Exclemation mark confusion --> replace with png speaker waves ( sorry :) )
 
 -- TODO: Enhanced docs @andi
 -- TODO: Optimize file size @andi
