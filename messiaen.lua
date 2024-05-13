@@ -28,13 +28,14 @@
 --- 
 
 ---------------------------------------------------------------------------
--- HOW TO DO?: position birds in garden mode and store the params in temp file. Q: shall the bird be repositioned automatically?
+-- HOW TO DO?: position birds in garden mode and store the params in temp file. Q: shall the bird be repositioned automatically? A: probably best option
 -- TODO: pan automation for active_bird in params (tree to tree) -- hell yeah, let's add some lfos!
 
--- TODO: Exclemation mark confusion --> replace with png speaker waves ( sorry :) )
+-- BUGS!: chirp volume behaving odd, sometimes it no work, always hangs on note when changing
+-- BUGS!: hanging note when exiting garden mode
+-- BUGS!: if bird is in play mode and you start messing around with visitor parameters it changes to the species in visitor mode as oposed ot main bird
 
--- TODO: Enhanced docs @andi
--- TODO: Optimize file size @andi
+-- TODO: eat zie bugs
 
 ---------------------------------------------------------------------------
 _f = require 'filters'
@@ -87,7 +88,7 @@ forest_voice = 6
 forest_level = 0.2
 forest_is_planted = true
 garden_is_planted = false
-default_forest = "/home/we/dust/code/messiaen/assets/forests/robinwren.wav" 
+default_forest = "/home/we/dust/code/messiaen/assets/forests/park_life.flac" 
 
 -- UI variables
 k1_pressed = false
@@ -372,7 +373,7 @@ function init()
   softcut.loop_end(forest_voice, MAX_BUFFER)
   softcut.position(forest_voice, 1)
   softcut.play(forest_voice, 1)
-  softcut.fade_time(forest_voice, 2)
+  softcut.fade_time(forest_voice, 0)
 
   -- callbacks
   softcut.event_position(get_pos)
@@ -605,11 +606,11 @@ function redraw()
       elseif info == false and bird_is_singing == true then
       screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch_sin.png", 0, 6)
       screen.move(65, 10)
-      screen.text_center("green finch")
+      screen.text_center("greenfinch")
       elseif info == false then  
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch1.png", 0, 6)
         screen.move(65, 10)
-        screen.text_center("green finch")
+        screen.text_center("greenfinch")
       end
     elseif main_bird_name == "willow warbler" then
       if info == true then
@@ -734,7 +735,7 @@ function redraw()
         screen.move(50,9)
         screen.font_size(11)
         screen.font_face(15)
-        screen.text("euroasian")
+        screen.text("eurasian")
         screen.move(50,21)
         screen.text("blackbird")
         screen.move(50,30)
@@ -750,11 +751,11 @@ function redraw()
       elseif info == false and bird_is_singing == true then
       screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird_sin.png", 8, 8)
       screen.move(65, 10)
-      screen.text_center("euroasian blackbird")
+      screen.text_center("eurasian blackbird")
       elseif info == false then
       screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird1.png", 8, 8)
       screen.move(65, 10)
-      screen.text_center("euroasian blackbird")
+      screen.text_center("eurasian blackbird")
     end
     elseif main_bird_name == "wren" then
       if info == true then
@@ -763,7 +764,7 @@ function redraw()
         screen.move(50,10)
         screen.font_size(11)
         screen.font_face(15)
-        screen.text("euroasian")
+        screen.text("eurasian")
         screen.move(50,20)
         screen.text("wren")
         screen.move(50,30)
@@ -779,11 +780,11 @@ function redraw()
       elseif info == false and bird_is_singing == true then
       screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren_sin.png", 0, 8)
       screen.move(65, 10)
-      screen.text_center("euroasian wren")
+      screen.text_center("eurasian wren")
       else
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren1.png", 0,8)
         screen.move(65, 10)
-        screen.text_center("euroasian wren")
+        screen.text_center("eurasian wren")
       end
     end
   end
