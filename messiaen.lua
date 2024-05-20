@@ -28,15 +28,8 @@
 --- 
 
 ---------------------------------------------------------------------------
--- HOW TO DO?: position birds in garden mode and store the params in temp file. Q: shall the bird be repositioned automatically? A: probably best option
--- TODO: pan automation for active_bird in params (tree to tree) -- hell yeah, let's add some lfos!
-
--- BUGS!: chirp volume behaving odd, sometimes it no work, always hangs on note when changing
--- BUGS!: hanging note when exiting garden mode
--- BUGS!: if bird is in play mode and you start messing around with visitor parameters it changes to the species in visitor mode as oposed ot main bird
-
--- TODO: eat zie bugs
-
+-- TODO: bird activity in garden mode.
+--       idea: one macro param (bird activity) controls the depth, and rate of multiple lfos (pan and depth).
 ---------------------------------------------------------------------------
 _f = require 'filters'
 bird = include 'lib/birds'
@@ -71,9 +64,11 @@ for i = 1, NUM_BIRDS do
   bird_voice[i].prev_level = 0
   bird_voice[i].prev_pan = 0
   bird_voice[i].prev_cutoff = 18500
-  bird_voice[i].prev_filter_q = 2
   bird_voice[i].prev_loop_size = 0.5
 end
+
+-- movement variables (more to come)
+auto_position = false
 
 -- seed variables (rec voice)
 -- this is where we have our recording buffer, that is constantly listening
@@ -104,8 +99,8 @@ for i = 1, NUM_BIRDS do
 end
 
 -- bird table: needs to correspond with bird.names from lib/birds
+-- acutally we can replace this with: bird[bird.names[idx]]
 bird_tab = {bird.wren, bird.robin, bird.blackbird, bird.chaffinch, bird.g_tit, bird.green_finch, bird.willow_warbler}
-
 
 -------- FUNCTIONS --------
 
@@ -115,12 +110,11 @@ function play_birdsongs(bird, voice)
   while true do
     local song = math.random(1, #bird)
     -- play notes
-    softcut.level(voice, bird_voice[voice].level)
     for i = 1, #bird[song] do
       local current_note = bird[song][i]
       local rate = ntor(current_note.r) * 3 * direction
       local slew = current_note.pb
-      local level = current_note.l
+      local level = current_note.l * bird_voice[voice].level
       softcut.rate(voice, rate)
       softcut.rate_slew_time(voice, slew)
       softcut.level(voice, level)
@@ -160,39 +154,22 @@ function toggle_forest()
   end
 end
 
-function grab_seed_old()
-  softcut.query_position(seed_voice)
-  is_memorizing = true
-  dirtyscreen = true
-  clock.run(function()
-    clock.sleep(MAX_SEED_LENGTH)
-    softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[1].pos, MAX_SEED_LENGTH, FADE_TIME) -- need to copy to the other bird buffers too
-    is_memorizing = false
-    dirtyscreen = true
-  end)
-end
-
-
 function grab_seed()
   softcut.query_position(seed_voice)
   is_memorizing = true
   dirtyscreen = true
   clock.run(function()
     clock.sleep(MAX_SEED_LENGTH)
-    if garden_is_planted then
-      if feed_mode == 1 then
-        for i = 1, 4 do
-          softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[i].pos, MAX_SEED_LENGTH, FADE_TIME)
-        end
-      elseif feed_mode == 2 then
-        bird_count = util.wrap(bird_count + 1, 1, 4)
-        softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[bird_count].pos, MAX_SEED_LENGTH, FADE_TIME)
-      elseif feed_mode == 3 then
-        local bird_num = math.random(1, 4)
-        softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[bird_num].pos, MAX_SEED_LENGTH, FADE_TIME)
+    if (feed_mode == 1 or not garden_is_planted) then
+      for i = 1, 4 do
+        softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[i].pos, MAX_SEED_LENGTH, FADE_TIME)
       end
-    else
-      softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[1].pos, MAX_SEED_LENGTH, FADE_TIME)
+    elseif feed_mode == 2 then
+      bird_count = util.wrap(bird_count + 1, 1, 4)
+      softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[bird_count].pos, MAX_SEED_LENGTH, FADE_TIME)
+    elseif feed_mode == 3 then
+      local bird_num = math.random(1, 4)
+      softcut.buffer_copy_mono(1, 1, seed_voice_pos, bird_voice[bird_num].pos, MAX_SEED_LENGTH, FADE_TIME)
     end
     is_memorizing = false
     dirtyscreen = true
@@ -204,28 +181,30 @@ function get_pos(i, pos) -- get and store softcut position (callback)
   print(i, pos)
 end
 
-function set_bird_level()
-  if bird_is_singing then
-    softcut.level(main_bird_voice, bird_voice[main_bird_voice].level)
-  else
-    softcut.level(main_bird_voice, 0)
-  end
-end
-
 function save_bird_params()
   for i = 1, 4 do
     bird_voice[i].prev_level = bird_voice[i].level
+    bird_voice[i].prev_loop_size = bird_voice[i].loop_size
     bird_voice[i].prev_pan = bird_voice[i].pan
     bird_voice[i].prev_cutoff = bird_voice[i].cutoff
-    bird_voice[i].prev_filter_q = bird_voice[i].filter_q
-    bird_voice[i].prev_loop_size = bird_voice[i].loop_size
   end
 end
 
 function restore_bird_params()
   for i = 1, 4 do
-    --params:set(bird_params[i].."_level", bird_voice[i].prev_level)
-    -- and so on
+    params:set(bird_params[i].."_level", bird_voice[i].prev_level)
+    params:set(bird_params[i].."_mood", bird_voice[i].prev_loop_size)
+    params:set(bird_params[i].."_pan", bird_voice[i].prev_pan)
+    --params:set(bird_params[i].."_cutoff", bird_voice[i].prev_cutoff)
+  end
+end
+
+function rnd_bird_params()
+  for i = 1, 4 do
+    --params:set(bird_params[i].."_level", math.random()) -- prob won't want this. or at least scale the range.
+    params:set(bird_params[i].."_mood", math.random())
+    params:set(bird_params[i].."_pan", math.random(-100, 100) / 100)
+    --params:set(bird_params[i].."_cutoff", math.random(240, 20000)) -- not woking with exp values. need to find workaound.
   end
 end
 
@@ -240,12 +219,18 @@ function call_bird(bird_name)
     clock.cancel(current_bird_clock)
   end
   current_bird_clock = clock.run(play_birdsongs, bird_name)
-  print("main bird called")
+  --print("main bird called")
 end
 
-function change_bird(bird_name)
-  if bird_is_singing then
+function change_bird(i, bird_name)
+  if bird_is_singing and i == 1 then
     call_bird(bird_name)
+  elseif garden_is_planted and i > 1 then
+    if garden_bird_clock[i] ~= nil then
+      clock.cancel(garden_bird_clock[i])
+    end
+    softcut.level(i, 0)
+    garden_bird_clock[i - 1] = clock.run(play_birdsongs, bird_name, i)
   end
 end
 
@@ -262,11 +247,15 @@ end
 -- garden
 function toggle_garden()  
   if garden_is_planted then
-    --save_bird_params()
-    --set_bird_params() -- might have differet presets
+    save_bird_params()
+    if auto_position then
+      rnd_bird_params()
+    end
     call_garden_birds()
   else
-    --restore_bird_params()
+    if auto_position then
+      restore_bird_params()
+    end
     stop_garden_birds()
   end
 end
@@ -285,7 +274,7 @@ function call_garden_birds()
       clock.sleep(math.random(2, 8))
       local visitor = params:get("visitor_"..i.."_active")
       garden_bird_clock[i] = clock.run(play_birdsongs, bird_tab[visitor], i + 1)
-      print("bird "..i.." is "..bird.names[visitor].." called")
+      --print("visitor "..i.." is "..bird.names[visitor].." called")
     end
   end)
 end
@@ -297,17 +286,17 @@ function stop_garden_birds()
   end
   if call_visitor_clock ~= nil then
     clock.cancel(call_visitor_clock)
+    --print("garden call clock canceled")
   end
   for i = 1, 3 do
     if garden_bird_clock[i] ~= nil then
       clock.cancel(garden_bird_clock[i])
+      --print("visitor"..i.."call clock canceled")
     end
+  end
+  for i = 1, 4 do
     softcut.level(i, 0)
   end
-end
-
-function randomize_garden_bird_params()
-  -- TODO
 end
 
 ---------- init function -----------
@@ -373,7 +362,7 @@ function init()
   softcut.loop_end(forest_voice, MAX_BUFFER)
   softcut.position(forest_voice, 1)
   softcut.play(forest_voice, 1)
-  softcut.fade_time(forest_voice, 0)
+  softcut.fade_time(forest_voice, 0.01) -- bet not 0. also you need to adjust the flac file to make it seamless.
 
   -- callbacks
   softcut.event_position(get_pos)
@@ -381,22 +370,22 @@ function init()
   -- bird voice parameters
   params:add_separator("bird_voicing", "birds")
 
-  local bird_params = {"main_bird", "visitor_1", "visitor_2", "visitor_3"}
-  local bird_param_names = {"main bird", "visitor 1", "visitor 2", "visitor 3"}
+  bird_params = {"main_bird", "visitor_1", "visitor_2", "visitor_3"}
+  bird_param_names = {"main bird", "visitor 1", "visitor 2", "visitor 3"}
 
   for i = 1, 4 do
     params:add_group(bird_params[i], bird_param_names[i], 5)
 
     params:add_option(bird_params[i].."_active", "bird", bird.names, 1)
-    params:set_action(bird_params[i].."_active", function (idx) bird_voice[i].name = bird.names[idx] change_bird(bird_tab[idx]) dirtyscreen = true end)
+    params:set_action(bird_params[i].."_active", function (idx) bird_voice[i].name = bird.names[idx] change_bird(i, bird_tab[idx]) dirtyscreen = true end)
 
     params:add_control(bird_params[i].."_level", "level", controlspec.new(0, 1, 'lin', 0, 0.4), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
-    params:set_action(bird_params[i].."_level", function(val) bird_voice[i].level = val set_bird_level() dirtyscreen = true end)
+    params:set_action(bird_params[i].."_level", function(val) bird_voice[i].level = val dirtyscreen = true end)
 
     params:add_control(bird_params[i].."_mood", "mood", controlspec.new(0.01, 1, 'lin', 0, 0.38), function(param) return (round_form(util.linlin(0.01, 1, 0, 100, param:get()), 1, "%")) end)
     params:set_action(bird_params[i].."_mood", function(val) bird_voice[i].loop_size = val softcut.loop_end(i, bird_voice[i].pos + bird_voice[i].loop_size) end)
 
-    params:add_control(bird_params[i].."_pan", "position", controlspec.new(-1, 1, 'lin', 0, 0, ""))
+    params:add_control(bird_params[i].."_pan", "position", controlspec.new(-1, 1, 'lin', 0, 0, ""), function(param) return pan_display(param:get()) end)
     params:set_action(bird_params[i].."_pan", function(val) bird_voice[i].pan = val softcut.pan(i, val) end)
 
     params:add_control(bird_params[i].."_cutoff", "distance", controlspec.new(20000, 240, 'exp', 0, 18500), function(param) return (round_form(util.explin(240, 20000, 100, 0, param:get()), 1, "%")) end)
@@ -418,8 +407,11 @@ function init()
   params:add_option("invite_birds", "invite friends", {"no", "yes"}, 1)
   params:set_action("invite_birds", function(val) garden_is_planted = val == 2 and true or false toggle_garden() end)
 
-  params:add_option("position_birds", "position birds", {"no", "yes"}, 1)
-  params:set_action("position_birds", function(val)  end)
+  params:add_option("position_birds", "birds position", {"manual", "auto"}, 1)
+  params:set_action("position_birds", function(mode) auto_position = mode == 2 and true or false build_menu() end)
+
+  params:add_control("bird_activity", "bird activity", controlspec.new(0, 1, 'lin', 0, 0), function(param) return (round_form(param:get() * 100, 1, "%")) end)
+  params:set_action("bird_activity", function(val)  end) 
 
   -- juggle the numbers for lager separation. i.e. increase 7.2 and increase the max val in the controlspec
   params:add_control("bird_talk", "song density", controlspec.new(0, 5, 'lin', 0, 2), function(param) return (round_form(util.linlin(0, 5, 0, 100, param:get()), 1, "%")) end)
@@ -541,12 +533,17 @@ function key(n, z)
 end
 
 
-
 function redraw()
   screen.clear()
   screen.level(15)
   if garden_is_planted then
     screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/garden.png", 0, 0)
+    if thresh_armed then
+      screen.level(is_memorizing and 15 or 1)
+      screen.font_size(16)
+      screen.move(62, 18)
+      screen.text_center(">)(<")
+    end
   else
     local main_bird_name = bird_voice[main_bird_voice].name
     screen.font_size(8)
@@ -567,9 +564,15 @@ function redraw()
     
     if thresh_armed and not info then
       screen.level(is_memorizing and 15 or 1)
-      screen.font_size(16)
-      screen.move(115, 31)
-      screen.text("((")
+      screen.font_size(22)
+      screen.move(108, 30)
+      screen.text("(")
+      screen.font_size(14)
+      screen.move(116, 28)
+      screen.text("(")
+      screen.font_size(10)
+      screen.move(121, 27)
+      screen.text("(")
     end
     
     screen.level(15)
@@ -789,7 +792,7 @@ function redraw()
     end
   end
   screen.update()
-  screen.peek(0, 0, 128, 64)
+  --screen.peek(0, 0, 128, 64)
 end
 -------- UTILITIES --------
 function r()
@@ -798,6 +801,31 @@ end
 
 function round_form(param, quant, form)
   return(util.round(param, quant)..form)
+end
+
+function pan_display(param)
+  local pos_right = ""
+  local pos_left = ""
+  if param < -0.01 then
+    pos_right = ""
+    pos_left = "L< "
+  elseif param > 0.01 then
+    pos_right = " >R"
+    pos_left = ""
+  else
+    pos_right = "<"
+    pos_left = ">"
+  end
+  return (pos_left..math.abs(util.round(util.linlin(-1, 1, -100, 100, param), 1))..pos_right)
+end
+
+function build_menu()
+  if auto_position then
+    params:show("bird_activity")
+  else
+    params:hide("bird_activity")
+  end
+  _menu.rebuild_params()
 end
 
 function screen_redraw()
