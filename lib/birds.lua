@@ -8,13 +8,9 @@ here you can add your own bird
 
 1. add the <name> of your bird to the bird.names table.
 
-2. create a table containing the birdsong parameters and bird name
+2. create a table containing the birdsong parameters
 
 bird.<name> = {}
-bird.<name>.name = "<name>"
-for i = 1, <number of birdsongs> do
-  bird.<name>[i] = {}
-end
 
 use the following template where,
 - r is rate
@@ -22,7 +18,7 @@ use the following template where,
 - pb is pitchbend
 - ft is fade time
 
-bird.NAME[i] = {
+bird.<name>[i] = {
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
@@ -31,16 +27,12 @@ bird.NAME[i] = {
 
 ]]--
 
--- these are the names of the birds in order of apperance
+-- these are the names and tab keys of the birds in order of apperance
 bird.names = {"wren", "robin", "blackbird", "chaffinch", "great tit", "green finch", "willow warbler"}
+bird.keys = {"wren", "robin", "blackbird", "chaffinch", "g_tit", "green_finch", "willow_warbler"}
 
 --wren
 bird.wren = {}
-bird.wren.name = "wren"
-for i = 1, 7 do
-  bird.wren[i] = {}
-end
-
 
 bird.wren[1] = {
   {r = 0, d = 0.2, pb = 0, l = 0, ft = 0.2},
@@ -362,10 +354,6 @@ bird.wren[7] = {
   
 --european robin
 bird.robin = {}
-bird.robin.name = "robin"
-for i = 1, 3 do
-  bird.robin[i] = {}
-end
 
 bird.robin[1] = {
   {r = 0, d = 0.17, pb = 0, l = 0, ft = 0.2},   
@@ -500,12 +488,8 @@ bird.robin[3] = {
 
 --blackbird
 bird.blackbird = {}
-for i = 1, 3 do
-  bird.blackbird[i] = {}
-end 
 
 -- needs work 
-
 bird.blackbird[1] = {
   {r = 2, d = 0.24, pb = 0.3, l = 0.5, ft = 0.2},  
   {r = 0, d = 0.07, pb = 0, l = 0, ft = 0.2},  -- pause
@@ -574,10 +558,7 @@ bird.blackbird[3] = {
 --chafinch
 -- may need 0.1 pb on trills
 bird.chaffinch = {}
-for i = 1, 3 do
-  bird.chaffinch[i] = {}
-end 
-  
+
 bird.chaffinch[1] = {
   {r = 0, d = 0.2, pb = 0, l = 0, ft = 0.2},   
   {r = 12, d = 0.10, pb = 2, l = 0.5, ft = 0.2},  
@@ -716,9 +697,6 @@ bird.chaffinch[3] = {
 
 --great tit
 bird.g_tit = {}
-for i = 1, 3 do
-  bird.g_tit[i] = {}
-end 
 
 bird.g_tit[1] = {
   {r = 0, d = 0.1, pb = 0, l = 0, ft = 0.3},
@@ -793,12 +771,7 @@ bird.g_tit[3] = {
 
 --green finch
 bird.green_finch = {}
-bird.green_finch.name = "green finch"
-for i = 1, 3 do
-  bird.green_finch[i] = {}
-end
 
- 
 bird.green_finch[1] = {
   {r = 0, d = 0.17, pb = 0, l = 0, ft = 0.2},   
   {r = 12, d = 0.02, pb = 0.1, l = 0.5, ft = 0.2},
@@ -860,8 +833,7 @@ bird.green_finch[2] = {
   {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.2} -- pause
 }
     
-    
-    
+
 bird.green_finch[3] = {
   {r = 0, d = 0.17, pb = 0, l = 0, ft = 0.2},   
   {r = 10, d = 0.02, pb = 0.2, l = 0.3, ft = 0.2},
@@ -978,12 +950,8 @@ bird.green_finch[3] = {
 } 
 
 
---willo warbler
+--willow warbler
 bird.willow_warbler = {}
-bird.willow_warbler.name = "willow warbler"
-for i = 1, 3 do
-  bird.willow_warbler[i] = {}
-end
 
 bird.willow_warbler[1] = {
   {r = 24, d = 0.055, pb = 0.2, l = 0.1, ft = 0.2},   
@@ -1083,17 +1051,12 @@ bird.willow_warbler[3] = {
 }  
 
 
-
----////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////
 -- unused birds (forthcoming)
 
 --song trush
 bird.trush = {}
-bird.trush.name = "trush"
-for i = 1, 5 do
-  bird.trush[i] = {}
-end
- 
+
 bird.trush[1] = {
   {r = 10, d = 0.05},
   {r = 4, d = 0.1},  
@@ -1135,10 +1098,6 @@ bird.trush[5] ={
   
  --nightingale
 bird.gale = {}
-bird.gale.name = "gale"
-for i = 1, 3 do
-  bird.gale[i] = {}
-end 
 
 bird.gale[1] = {
   {r = 1, d = 0.20},
@@ -1182,10 +1141,6 @@ bird.gale[1] = {
 
 --nuthach
 bird.nuthach = {}
-bird.nuthach.name = "nuthach"
-for i = 1, 4 do
-  bird.nuthach[i] = {}
-end
 
 bird.nuthach[1] = {
   {r = 6, d = 0.18},   
@@ -1198,9 +1153,6 @@ bird.nuthach[1] = {
 
 --awesome bird
 bird.awesome = {}
-for i = 1, 5 do
-  bird.awesome[i] = {}
-end 
 
 bird.awesome[1] = {
   {r = 1, d = 1/8},
@@ -1259,9 +1211,6 @@ bird.awesome[5] = {
 
 --weird bird
 bird.weird = {}
-for i = 1, 2 do
-  bird.weird[i] = {}
-end 
 
 bird.weird[1] = {
   {r = math.random((12)+2 / 2), d = 1/4},
