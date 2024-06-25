@@ -28,7 +28,7 @@
 --- 
 
 ---------------------------------------------------------------------------
--- TODO: adjust the flac file to make it seamless.
+-- TODO: adjust the flac file to make it seamless. -- put hermit leaves for now, let me know if this idea is good for you (makes the script lighter)
 ---------------------------------------------------------------------------
 
 _flt = require 'filters'
@@ -94,8 +94,8 @@ forest_voice = 6
 forest_level = 0.2
 forest_is_planted = true
 garden_is_planted = false
-default_forest = "/home/we/dust/code/messiaen/assets/forests/park_life.flac" -- @andy: you need to trim the file as there is a gab (does not loop seamlessly).
-
+default_forest = "/home/we/dust/audio/hermit_leaves.wav" -- @andy: you need to trim the file as there is a gab (does not loop seamlessly).
+--default_forest = "/home/we/dust/audio/messiaen/assets/forests/park_life.flac"
 -- @andy: acutally, we can replace "bird_tab" with: bird[bird.names[idx]] or bird[bird_voice[i].name].
 --        as bird_voice[i].name is a string e.g. "wren" we get this --> tab["key"] == tab.key, so bird["wren"] == bird.wren
 
@@ -114,9 +114,9 @@ function play_birdsongs(bird_num, bird_tab)
     -- play notes
     for i = 1, #birdsong do
       local current_note = birdsong[i]
-      local rate = math.pow(2, current_note.r / 12) * 3 -- @andy: integrated ntor() directly as its only used here.
+      local rate = math.pow(2, current_note.r / 12) * 3
       local slew = current_note.pb
-      local level = current_note.l * bird_voice[bird_num].level * global_level -- @andy: added global_level control.
+      local level = current_note.l * bird_voice[bird_num].level * global_level
       softcut.rate(bird_num, rate)
       softcut.rate_slew_time(bird_num, slew)
       softcut.level(bird_num, level)
@@ -230,8 +230,8 @@ function toggle_garden()
   if garden_is_planted then
     save_bird_params()
     -- call birds
-    call_bird(main_bird, bird[bird_voice[main_bird].key]) -- @andy: main bird is initialized immidiately
-    call_visitors_clock = clock.run(function()             --        the other birds (2- 4) are called via clock
+    call_bird(main_bird, bird[bird_voice[main_bird].key]) 
+    call_visitors_clock = clock.run(function()
       for bird_num = 2, 4 do
         clock.sleep(math.random(2, 8))
         call_bird(bird_num, bird[bird_voice[bird_num].key])
@@ -265,10 +265,10 @@ function trig_bird_movement()
   end
 end
 
--- @andy: move_birds sets the pan position and cutoff of the birds sequentially to simulate a somewhat "natural" behaviour.
+-- @andy: move_birds sets the pan position and cutoff of the birds sequentially to simulate a somewhat "natural" behaviour. -- @Sacha: FUCKING GENIUS!
 --        we don't want all birds to move at the same time and abruptly,
 --        hence introducing pan_slew. unfortunatley there is no slew for cutoff freq.
---        birds 2, 3 and 4 have boundries and are based on the values of bird 1 so that they can't all clump in one place.
+--        birds 2, 3 and 4 have boundries and are based on the values of bird 1 so that they can't all clump in one place. 
 function move_birds()
   if birds_moving == false then
     birds_moving = true
@@ -326,8 +326,8 @@ function load_audio(path)
   end
 end
 
-function set_forest_level() -- @andy: replaced toggle forest with set_forest_level(), as the playback could be heard when loading a pset with plant forest set to "no".
-  if forest_is_planted then --        the playback position is set directly within params.
+function set_forest_level()
+  if forest_is_planted then
     softcut.level(forest_voice, forest_level)
   else
     softcut.level(forest_voice, 0)
@@ -405,7 +405,7 @@ function init()
   -- bird voice parameters
   params:add_separator("bird_voicing", "birds")
 
-  -- @andy: added a param for global level.
+
   params:add_control("global_level", "main level", controlspec.new(0, 1, 'lin', 0, 1), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
   params:set_action("global_level", function(val) global_level = val end)
 
@@ -434,7 +434,7 @@ function init()
   params:add_option("input_source", "input source", {"sum l+r", "mono l", "mono r", "eng"}, 1) -- @andy: added a parameter to select the input source.
   params:set_action("input_source", function(option) set_softcut_input(option) end)            -- if nbin mod is installed you can use a nb voice as source (eng).
 
-  params:add_control("rec_threshold", "threshold", controlspec.new(-20, 0, 'lin', 0, -12, "dB"))
+  params:add_control("rec_threshold", "threshold", controlspec.new(-20, 0, 'lin', 0, -18, "dB"))
   params:set_action("rec_threshold", function(val)
     threshold_upper = util.round((util.dbamp(val) / 10), 0.01)
     threshold_lower = threshold_upper * 0.6 -- se magic number
@@ -546,11 +546,11 @@ function key(n, z)
     k1_pressed = z == 1 and true or false
   end
   if n == 2 and z == 1 then
-    if k1_pressed then -- @andy: moved garden_mode to K2 as its more intuitive to use the same key to call birds.
+    if k1_pressed then -- @andy: moved garden_mode to K2 as its more intuitive to use the same key to call birds. -- totally agree
       params:set("invite_birds", garden_is_planted and 1 or 2)
     else
       if garden_is_planted then
-        move_birds() -- @andy: while in garden mode we can manually trigger position changes even if autoposition is off.
+        move_birds() -- @andy: while in garden mode we can manually trigger position changes even if autoposition is off. --am i doing something wrong here, k2 should give me some auditory feedback nop?
       else
         if bird_voice[main_bird].active then -- @andy: while not in garden_mode use K2 to toggle the main bird.
           silent_bird(main_bird)             --        bird_is_singing has been replaced by bird_voice[main_bird].active
@@ -561,7 +561,7 @@ function key(n, z)
     end
   elseif n == 3 and z == 1 then
     if k1_pressed then
-      info = not info -- @andy: moved info to K3 as activating birds seems more intuitive to keep on K2.
+      info = not info 
     else
       thresh_armed = not thresh_armed
     end
@@ -580,7 +580,7 @@ function redraw()
       screen.font_size(16)
       screen.move(62, 18)
       screen.text_center(">)(<") -- @andy: using this to visualize whether we are in recording mode or not.
-    end                          --        you might want to replace it with a png?
+    end                          --        you might want to replace it with a png? -- actually works fine and we dont need new kbs :D
   else
     local name_e2 = k1_pressed and "distance" or "mood"
     local value_e2 = k1_pressed and params:string("main_bird_cutoff") or params:string("main_bird_mood")
@@ -599,13 +599,13 @@ function redraw()
 
     if bird_voice[main_bird].active and not info then
       screen.level(15)
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/note.png", 100, 20)
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/note.png", 98, 20)
     end
      
     if thresh_armed and not info then
       screen.level(is_memorizing and 15 or 1)
-      screen.font_size(22) -- @andy: using this to visualize whether we are in recording mode or not.
-      screen.move(108, 30) --        you might want to replace it with a png?
+      screen.font_size(22)
+      screen.move(108, 30)
       screen.text("(")
       screen.font_size(14)
       screen.move(116, 28)
@@ -647,11 +647,11 @@ function redraw()
         screen.move(0,60)
         screen.text("and a slow wheeze like dweez.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch_sin.png", 0, 6)
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch_sin.png", -2, 6)
       screen.move(65, 10)
       screen.text_center("greenfinch")
       elseif info == false then  
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch1.png", 0, 6)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch1.png",-2, 6)
         screen.move(65, 10)
         screen.text_center("greenfinch")
       end
@@ -705,11 +705,11 @@ function redraw()
         screen.move(0,60)
         screen.text("couplets of sweet tee-cher!")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit_sin.png", -4, 6)
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit_sin.png", -8, 6)
       screen.move(65, 10)
       screen.text_center("great tit")
       elseif info == false then  
-        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit1.png", -4, 6)
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit1.png", -8, 6)
         screen.move(65, 10)
         screen.text_center("great tit")
       end
@@ -734,7 +734,7 @@ function redraw()
          screen.move(0,60)
         screen.text("its bold & theatrical ending.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch_sin.png", 0, 8)
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch_sin.png",0, 8)
       screen.move(65, 10)
       screen.text_center("chaffinch")
       elseif info == false then
