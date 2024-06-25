@@ -14,22 +14,19 @@
 --- E1 change that bird! 
 --- E2 bird mood
 --- E3 chirp volume
+--- K1+E2 distance
+--- K1+E3 position
 ---
---- K1 combo
---- K2 it sings
---- K3 it flips
---- K1+K2 toggle info
---- K1+K3 toggle garden
+--- K2 toggle birdsong
+--- K3 toggle recording
+--- K1+K2 toggle garden
+--- K1+K3 toggle info
 ---
---- play something for the bird
---- and the active bird shall
---- listen )))
+--- press K3 and play something
+--- for the bird and the active
+--- bird will listen )))
 --- make it sing by pressing K2.
 --- 
-
----------------------------------------------------------------------------
--- TODO: adjust the flac file to make it seamless. -- put hermit leaves for now, let me know if this idea is good for you (makes the script lighter)
----------------------------------------------------------------------------
 
 _flt = require 'filters'
 bird = include 'lib/birds'
@@ -70,8 +67,8 @@ for i = 1, NUM_BIRDS do
   bird_voice[i].pos = (REC_LOOP_SIZE + 1) + (MAX_SEED_LENGTH + 1) * (i - 1)
   bird_voice[i].loop_size = 0.5
   -- activity
-  bird_voice[i].active = false
-  bird_voice[i].clock = nil
+  bird_voice[i].active = false -- state of the bird. if true then its singing else it aint.
+  bird_voice[i].clock = nil -- placeholder variable for the clock id.
   -- temp storage
   bird_voice[i].prev_pan = 0
   bird_voice[i].prev_cutoff = 18500
@@ -96,13 +93,7 @@ forest_is_planted = true
 garden_is_planted = false
 default_forest = "/home/we/dust/audio/hermit_leaves.wav" -- @andy: you need to trim the file as there is a gab (does not loop seamlessly).
 --default_forest = "/home/we/dust/audio/messiaen/assets/forests/park_life.flac"
--- @andy: acutally, we can replace "bird_tab" with: bird[bird.names[idx]] or bird[bird_voice[i].name].
---        as bird_voice[i].name is a string e.g. "wren" we get this --> tab["key"] == tab.key, so bird["wren"] == bird.wren
 
---        edit: this did not work for birds where the name and key are not the same -> added bird_voice[i].key to adress this.
---              see change_bird(). also in the bird lib there is a table with the keys --> bird.keys = {"wren"....}
-
--- bird_tab = {bird.wren, bird.robin, bird.blackbird, bird.chaffinch, bird.g_tit, bird.green_finch, bird.willow_warbler} -- nuke bird_tab
 
 -------- FUNCTIONS --------
 
@@ -110,7 +101,7 @@ default_forest = "/home/we/dust/audio/hermit_leaves.wav" -- @andy: you need to t
 function play_birdsongs(bird_num, bird_tab)
   local bird_num = bird_num or 1
   while true do
-    local birdsong = bird_tab[math.random(1, #bird_tab)] -- @andy: simplifed by assigning the birdsong table to a variable.
+    local birdsong = bird_tab[math.random(1, #bird_tab)]
     -- play notes
     for i = 1, #birdsong do
       local current_note = birdsong[i]
@@ -156,7 +147,7 @@ end
 function set_softcut_input(option)
   -- set source
   audio.level_adc_cut(option < 4 and 1 or 0)
-  audio.level_eng_cut(option == 4 and 1 or 0)
+  --audio.level_eng_cut(option == 4 and 1 or 0)
   -- set softcut inputs
   if option == 1 or option > 3 then -- summed
     softcut.level_input_cut(1, seed_voice, 0.707)
@@ -297,9 +288,9 @@ function move_birds()
           new_distance = math.random(dis_min, dis_max) / 10
         end
         -- set params
+        softcut.pan_slew_time(num, math.random(0, 20) / 10)
         params:set(bird_params[num].."_pan", new_position)
         params:set(bird_params[num].."_cutoff", new_distance)
-        softcut.pan_slew_time(num, math.random(0, 20) / 10)
         clock.sleep(math.random(2, 10) / 10) -- sleep between 0.2s and 1s
         -- reset pan slew
         softcut.pan_slew_time(num, 0)
@@ -322,6 +313,8 @@ function load_audio(path)
       print("file loaded: "..path.." is "..l.."s")
     else
       print("not a sound file")
+      params:set("plant_forest", 1)
+      params:set("load_forest", "")
     end
   end
 end
@@ -405,14 +398,13 @@ function init()
   -- bird voice parameters
   params:add_separator("bird_voicing", "birds")
 
-
   params:add_control("global_level", "main level", controlspec.new(0, 1, 'lin', 0, 1), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
   params:set_action("global_level", function(val) global_level = val end)
 
   for i = 1, 4 do
     params:add_group(bird_params[i], bird_param_names[i], 5)
 
-    params:add_option(bird_params[i].."_active", "bird", bird.names, 1)
+    params:add_option(bird_params[i].."_active", "bird", bird.names, i)
     params:set_action(bird_params[i].."_active", function (idx) change_bird(i, idx) end)
 
     params:add_control(bird_params[i].."_level", "level", controlspec.new(0, 1, 'lin', 0, 0.4), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
@@ -431,7 +423,7 @@ function init()
   -- rec parameters
   params:add_separator("bird_rec", "recording")
 
-  params:add_option("input_source", "input source", {"sum l+r", "mono l", "mono r", "eng"}, 1) -- @andy: added a parameter to select the input source.
+  params:add_option("input_source", "input source", {"sum l+r", "mono l", "mono r"}, 1) -- @andy: added a parameter to select the input source.
   params:set_action("input_source", function(option) set_softcut_input(option) end)            -- if nbin mod is installed you can use a nb voice as source (eng).
 
   params:add_control("rec_threshold", "threshold", controlspec.new(-20, 0, 'lin', 0, -18, "dB"))
@@ -568,7 +560,6 @@ function key(n, z)
   end
   dirtyscreen = true
 end
-
 
 function redraw()
   screen.clear()
