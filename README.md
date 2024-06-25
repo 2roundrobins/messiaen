@@ -78,7 +78,7 @@ mood, which can be changed by turning e2, is simply bird's »feistiness«. the h
 this is the general volume control of the bird
 
 ### bird info
-![bird_info_gui](/assets/doc/bird_info_gui.png)
+![bird_info_gui](/assets/doc/bird_info.png)
 each birdsong has its own description that will hopefully help you understand the wacky rate changes. you can initiate this by holding k1 and pressing k2.
 
 ## PARAMS
