@@ -638,9 +638,9 @@ function redraw()
         screen.move(0,60)
         screen.text("and a slow wheeze like dweez.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch_sin.png", -2, 6)
-      screen.move(65, 10)
-      screen.text_center("greenfinch")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch_sin.png", -2, 6)
+        screen.move(65, 10)
+        screen.text_center("greenfinch")
       elseif info == false then  
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greenfinch1.png",-2, 6)
         screen.move(65, 10)
@@ -667,9 +667,9 @@ function redraw()
         screen.move(0,60)
         screen.text("sounding fragility to its voice.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willowwarbler_sin.png", 0, 8)
-      screen.move(65, 10)
-      screen.text_center("willow warbler")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willowwarbler_sin.png", 0, 8)
+        screen.move(65, 10)
+        screen.text_center("willow warbler")
       elseif info == false then
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willowwarbler1.png", 0, 8)
         screen.move(65, 10)
@@ -696,9 +696,9 @@ function redraw()
         screen.move(0,60)
         screen.text("couplets of sweet tee-cher!")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit_sin.png", -8, 6)
-      screen.move(65, 10)
-      screen.text_center("great tit")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit_sin.png", -8, 6)
+        screen.move(65, 10)
+        screen.text_center("great tit")
       elseif info == false then  
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit1.png", -8, 6)
         screen.move(65, 10)
@@ -725,9 +725,9 @@ function redraw()
          screen.move(0,60)
         screen.text("its bold & theatrical ending.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch_sin.png",0, 8)
-      screen.move(65, 10)
-      screen.text_center("chaffinch")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch_sin.png",0, 8)
+        screen.move(65, 10)
+        screen.text_center("chaffinch")
       elseif info == false then
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch1.png", 0, 8)
         screen.move(65, 10)
@@ -754,9 +754,9 @@ function redraw()
         screen.move(0,60)
         screen.text("in the calmness of winter.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/robin_sin.png", 0, 8)
-      screen.move(65, 10)
-      screen.text_center("european robin")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/robin_sin.png", 0, 8)
+        screen.move(65, 10)
+        screen.text_center("european robin")
       elseif info == false then
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/robin1.png", 0, 8)
         screen.move(65, 10)
@@ -782,15 +782,15 @@ function redraw()
         screen.text("can improvise with a large")
         screen.move(0,60)
         screen.text("catalogue of complex beauty.")
-      elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird_sin.png", 8, 8)
-      screen.move(65, 10)
-      screen.text_center("eurasian blackbird")
-      elseif info == false then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird1.png", 8, 8)
-      screen.move(65, 10)
-      screen.text_center("eurasian blackbird")
-    end
+        elseif info == false and bird_voice[main_bird].active == true then
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird_sin.png", 8, 8)
+        screen.move(65, 10)
+        screen.text_center("eurasian blackbird")
+        elseif info == false then
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird1.png", 8, 8)
+        screen.move(65, 10)
+        screen.text_center("eurasian blackbird")
+      end
     elseif bird_voice[main_bird].name == "wren" then
       if info == true then
         screen.clear()
@@ -812,14 +812,17 @@ function redraw()
         screen.move(0,60)
         screen.text("verses with rapid-fire bursts.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren_sin.png", 0, 8)
-      screen.move(65, 10)
-      screen.text_center("eurasian wren")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren_sin.png", 0, 8)
+        screen.move(65, 10)
+        screen.text_center("eurasian wren")
       else
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren1.png", 0,8)
         screen.move(65, 10)
         screen.text_center("eurasian wren")
       end
+    else
+      screen.move(64, 37)
+      screen.text_center("no image") -- @andy: added a failsafe just in case someone adds their own bird in the bird lib.
     end
   end
   screen.update()
