@@ -1,4 +1,4 @@
-# massiaen
+# messiaen
  norns script based on birdsong
 
 ![main_gui2](/assets/doc/main_gui.png)
