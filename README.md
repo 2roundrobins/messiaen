@@ -138,8 +138,15 @@ This controls the handling of your recorded material. You can still record new m
 
 ### forest 
 Here you can change the ambience file by loading your own enviroment. You can also turn off the enviromental sounds by turning to "_no_" on the plant forest option.
-For future use, if you do not want to have an enviroment in the background each time you boot up the script - you can freely change that in the code by turning _forest_planted = false._
+For future use, if you do not want to have an enviroment in the background each time you boot up the script - you can freely change that in the code by going to the params section
 
+
+```
+
+ params:add_option("plant_forest", "plant?", {"no", "yes"}, 2)
+
+```
+and changing the 2 to 1.
 
 
 ## MESSIAEN COMMUNITY PROJECT
@@ -162,20 +169,11 @@ _note: there is probably an easier way to transcribe these to rates and if you k
 There are some instructions in the birds.lua file that you can find in the lib folder. since, the current script is built around this method it is crucial to follow it in such a way. This might change in the future, however...
 
 ```
---[[
-
-welcome to the bird tables
-here you can add your own bird
-
 1. add the <name> of your bird to the bird.names table.
 
-2. create a table containing the birdsong parameters and bird name
+2. create a table containing the birdsong parameters
 
 bird.<name> = {}
-bird.<name>.name = "<name>"
-for i = 1, <number of birdsongs> do
-  bird.<name>[i] = {}
-end
 
 use the following template where,
 - r is rate
@@ -183,14 +181,12 @@ use the following template where,
 - pb is pitchbend
 - ft is fade time
 
-bird.NAME[i] = {
+bird.<name>[i] = {
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2}
 }
-
-]]--
 ```
 
 ### sharing
