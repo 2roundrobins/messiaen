@@ -6,19 +6,20 @@ bird = {}
 welcome to the bird tables
 here you can add your own bird
 
-1. add the <name> of your bird to the bird.names table.
+1. add the <name> of your bird to the bird.names table. this will be displayed in the script.
 
-2. create a table containing the birdsong parameters
+2. create a table containing the birdsong parameters and add the <key> to the bird.keys table.
 
-bird.<name> = {}
+bird.<key> = {}
 
-use the following template where,
+3. use the following template where,
+
 - r is rate
 - d is duration
 - pb is pitchbend
 - ft is fade time
 
-bird.<name>[i] = {
+bird.<key>[i] = {
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
@@ -26,6 +27,7 @@ bird.<name>[i] = {
 }
 
 ]]--
+
 
 -- these are the names and tab keys of the birds in order of apperance
 bird.names = {"wren", "robin", "blackbird", "chaffinch", "great tit", "green finch", "willow warbler"}
@@ -1049,184 +1051,6 @@ bird.willow_warbler[3] = {
   {r = 20, d = 0.10, pb = 0.4, l = 0.6 , ft = 0.2},   
   {r = 0, d = 0.17, pb = 0, l = 0.0, ft = 0.2},   -- pause 
 }  
-
-
--- ////////////////////////////////////////////////////////////
--- unused birds (forthcoming)
-
---song trush
-bird.trush = {}
-
-bird.trush[1] = {
-  {r = 10, d = 0.05},
-  {r = 4, d = 0.1},  
-  {r = 13, d = 0.05},
-  {r = 7, d = 0.1},
-  {r = 15, d = 0.1}
-}
-bird.trush[2] = {
-  {r = 10, d = 0.05}, 
-  {r = 4, d = 0.1}, 
-  {r = 13, d = 0.05},
-  {r = 7, d = 0.1},
-  {r = 15, d = 0.1}
-}
-bird.trush[3] = {
-  {r = 7, d = 0.05},
-  {r = 8, d = 0.05},
-  {r = 14, d = 0.05},
-  {r = 13, d = 0.05},
-  {r = 12, d = 0.05},
-  {r = 10, d = 0.05},
-  {r = 9, d = 0.1}
-}
-bird.trush[4]= {
-  {r = 1, d = 0.05},
-  {r = 7, d = 0.05},
-  {r = 13, d = 0.05},
-  {r = 14, d = 0.05},
-  {r = 14, d = 0.1},
-  {r = 1, d = 0.05}, 
-  {r = 7, d = 0.05},
-  {r = 13, d = 0.05},
-  {r = 14, d = 0.05},
-  {r = 14, d = 0.1}
-}
-bird.trush[5] ={
-  {r = 1, d = 0.1}
-}
-  
- --nightingale
-bird.gale = {}
-
-bird.gale[1] = {
-  {r = 1, d = 0.20},
-  {r = 12, d = 0.83},  
-  {r = 7, d = 0.10},
-  {r = 8, d = 0.20}, 
-  {r = 1, d = 0.20},
-  {r = 12, d =  0.83},
-  {r = 7, d = 0.10},
-  {r = 8, d = 0.10},
-  {r = 10, d = 0.83},
-  {r = 1/2, d = 0.20}
-}
-
-  bird.gale[2] = { 
-  {r = 1, d = 0.20},
-  {r = 12, d = 0.83},
-  {r = 7, d = 0.10},   
-  {r = 8, d = 0.20}, 
-  {r = 1, d = 0.20},
-  {r = 12, d =  0.83},
-  {r = 7, d = 0.10},
-  {r = 8, d = 0.10},
-  {r = 10, d = 0.83},
-  {r = 1/2, d = 0.20}
-}
-
-  bird.gale[3] = { 
-  {r = 1, d = 0.20},
-  {r = 12, d = 0.83},
-  {r = 7, d = 0.10}, 
-  {r = 8, d = 0.20}, 
-  {r = 1, d = 0.20},
-  {r = 12, d =  0.83},
-  {r = 7, d = 0.10},
-  {r = 8, d = 0.10},
-  {r = 10, d = 0.83},
-  {r = 1/2, d = 0.20}
-}
-
-
---nuthach
-bird.nuthach = {}
-
-bird.nuthach[1] = {
-  {r = 6, d = 0.18},   
-  {r = 3, d = 0.18},   
-  {r = 1, d = 0.18},   
-  {r = 11, d = 0.36}
-}
----- special birds ----
---needs extra work--
-
---awesome bird
-bird.awesome = {}
-
-bird.awesome[1] = {
-  {r = 1, d = 1/8},
-  {r = 7, d = 1/16},   
-  {r = 12, d = 1/8},   
-  {r = 1, d = 1/8}, 
-  {r = 12, d = 1/4}
-}
-bird.awesome[2] = {
-  {r = 7, d = 1/8},
-  {r = 1, d = 1/16},   
-  {r = 12, d = 1/8},   
-  {r = 4, d = 1/8}, 
-  {r = 1, d = 1/4}
-}
-bird.awesome[3] = {
-  {r = 7, d = 1/32},
-  {r = 1, d = 1/16},   
-  {r = 7, d = 1/32},   
-  {r = 12, d = 1/8}, 
-  {r = 1, d = 1/4},
-  {r = 7, d = 1/2},
-  {r = 12, d = 1/16},
-  {r = 4, d = 1/16},
-  {r = 7, d = 1/24},
-  {r = 12, d = 1/32},
-  {r = 4, d = 1/8},
-  {r = 1, d = 1/4}
-}
-bird.awesome[4] = {
-  {r = 1, d = 1/32},
-  {r = 2, d = 1/32},   
-  {r = 4, d = 1/32},   
-  {r = 5, d = 1/32}, 
-  {r = 7, d = 1/32},
-  {r = 9, d = 1/32},
-  {r = 11, d = 1/32},
-  {r = 12, d = 1/32},
-  {r = 1, d = 1/4},
-  {r = 12, d = 1/32},
-  {r = 11, d = 1/32},
-  {r = 9, d = 1/32},
-  {r = 7, d = 1/16},
-  {r = 5, d = 1/8}, 
-  {r = 4, d = 1/4},
-  {r = 2, d = 1/2}, 
-  {r = 1, d = 1/1}
-}
-bird.awesome[5] = {
-  {r = 1, d = 1/8},
-  {r = 7, d = 1/16},   
-  {r = 1, d = 1/8},   
-  {r = 7, d = 1/8}, 
-  {r = 12, d = 1/4}
-}
-
---weird bird
-bird.weird = {}
-
-bird.weird[1] = {
-  {r = math.random((12)+2 / 2), d = 1/4},
-  {r = math.random((24)+2 / 2), d = 1/4},   
-  {r = math.random((7)+3*2), d = 1/4},   
-  {r = math.random((24)+2 / 2), d = 1/4}, 
-  {r = math.random((12)+2 / 2), d = 1/4}
-}
-
-  bird.weird[2] = {
-  {r = math.random((12)+2 / 2), d = 1/4}, --needs change
-  {r = math.random((24)+2 / 2), d = 1/4},   
-  {r = math.random((7)+3*2), d = 1/4},   
-  {r = math.random((24)+2 / 2), d = 1/4}, 
-  {r = math.random((12)+2 / 2), d = 1/4}
-}
 
 
 return bird
