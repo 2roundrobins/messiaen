@@ -198,7 +198,7 @@ You can share the library either by opening an issue, stating which bird species
 
 you can also get in touch with me via discord @fellowfinch 
 or just join the server
-https://discord.gg/KtqJGGDR
+[https://discord.gg/KtqJGGDR](https://discord.gg/64bvQUM9Te)
 
 also find me on lines...
 
