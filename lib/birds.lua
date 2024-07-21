@@ -14,6 +14,7 @@ bird.<key> = {}
 
 3. use the following template where,
 
+- i is the index of the birdsong
 - r is rate
 - d is duration
 - pb is pitchbend
