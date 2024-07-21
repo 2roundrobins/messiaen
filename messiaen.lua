@@ -144,10 +144,6 @@ function grab_seed()
 end
 
 function set_softcut_input(option)
-  -- set source
-  audio.level_adc_cut(option < 4 and 1 or 0)
-  audio.level_eng_cut(option == 4 and 1 or 0)
-  -- set softcut inputs
   if option == 1 or option > 3 then -- summed
     softcut.level_input_cut(1, seed_voice, 0.707)
     softcut.level_input_cut(2, seed_voice, 0.707)
@@ -274,9 +270,9 @@ function move_birds()
           new_distance = math.random(dis_min, dis_max) / 10
         end
         -- set params
+        softcut.pan_slew_time(num, math.random(0, 20) / 10)
         params:set(bird_params[num].."_pan", new_position)
         params:set(bird_params[num].."_cutoff", new_distance)
-        softcut.pan_slew_time(num, math.random(0, 20) / 10)
         clock.sleep(math.random(2, 10) / 10) -- sleep between 0.2s and 1s
         -- reset pan slew
         softcut.pan_slew_time(num, 0)
@@ -298,6 +294,8 @@ function load_audio(path)
       softcut.loop_end(forest_voice, 1 + l)
       print("file loaded: "..path.." is "..l.."s")
     else
+      params:set("plant_forest", 1)
+      params:set("load_forest", "")
       print("not a sound file")
     end
   end
@@ -389,7 +387,7 @@ function init()
   for i = 1, 4 do
     params:add_group(bird_params[i], bird_param_names[i], 5)
 
-    params:add_option(bird_params[i].."_active", "bird", bird.names, 1)
+    params:add_option(bird_params[i].."_active", "bird", bird.names, i)
     params:set_action(bird_params[i].."_active", function (idx) change_bird(i, idx) end)
 
     params:add_control(bird_params[i].."_level", "level", controlspec.new(0, 1, 'lin', 0, 0.4), function(param) return (round_form(util.linlin(0, 1, 0, 100, param:get()), 1, "%")) end)
@@ -429,7 +427,6 @@ function init()
   params:add_control("bird_activity", "bird activity", controlspec.new(0, 1, 'lin', 0, 0), function(param) return (round_form(param:get() * 100, 1, "%")) end)
   params:set_action("bird_activity", function(val) bird_movement_prob = val * 100 end) 
 
-  -- juggle the numbers for lager separation. i.e. increase 7.2 and increase the max val in the controlspec
   params:add_control("bird_talk", "song density", controlspec.new(0, 5, 'lin', 0, 2), function(param) return (round_form(util.linlin(0, 5, 0, 100, param:get()), 1, "%")) end)
   params:set_action("bird_talk", function(val) separation = 7.2 - val end) 
 
@@ -653,9 +650,9 @@ function redraw()
         screen.move(0,60)
         screen.text("sounding fragility to its voice.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willowwarbler_sin.png", 0, 8)
-      screen.move(65, 10)
-      screen.text_center("willow warbler")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willowwarbler_sin.png", 0, 8)
+        screen.move(65, 10)
+        screen.text_center("willow warbler")
       elseif info == false then
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/willowwarbler1.png", 0, 8)
         screen.move(65, 10)
@@ -682,9 +679,9 @@ function redraw()
         screen.move(0,60)
         screen.text("couplets of sweet tee-cher!")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit_sin.png", -8, 6)
-      screen.move(65, 10)
-      screen.text_center("great tit")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit_sin.png", -8, 6)
+        screen.move(65, 10)
+        screen.text_center("great tit")
       elseif info == false then  
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/greattit1.png", -8, 6)
         screen.move(65, 10)
@@ -708,12 +705,12 @@ function redraw()
         screen.text("a downward pull")
         screen.move(0,50)
         screen.text("chaffinch is confident with")
-         screen.move(0,60)
+        screen.move(0,60)
         screen.text("its bold & theatrical ending.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch_sin.png",0, 8)
-      screen.move(65, 10)
-      screen.text_center("chaffinch")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch_sin.png",0, 8)
+        screen.move(65, 10)
+        screen.text_center("chaffinch")
       elseif info == false then
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/chaffinch1.png", 0, 8)
         screen.move(65, 10)
@@ -740,9 +737,9 @@ function redraw()
         screen.move(0,60)
         screen.text("in the calmness of winter.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/robin_sin.png", 0, 8)
-      screen.move(65, 10)
-      screen.text_center("european robin")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/robin_sin.png", 0, 8)
+        screen.move(65, 10)
+        screen.text_center("european robin")
       elseif info == false then
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/robin1.png", 0, 8)
         screen.move(65, 10)
@@ -769,14 +766,14 @@ function redraw()
         screen.move(0,60)
         screen.text("catalogue of complex beauty.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird_sin.png", 8, 8)
-      screen.move(65, 10)
-      screen.text_center("eurasian blackbird")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird_sin.png", 8, 8)
+        screen.move(65, 10)
+        screen.text_center("eurasian blackbird")
       elseif info == false then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird1.png", 8, 8)
-      screen.move(65, 10)
-      screen.text_center("eurasian blackbird")
-    end
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird1.png", 8, 8)
+        screen.move(65, 10)
+        screen.text_center("eurasian blackbird")
+      end
     elseif bird_voice[main_bird].name == "wren" then
       if info == true then
         screen.clear()
@@ -798,9 +795,9 @@ function redraw()
         screen.move(0,60)
         screen.text("verses with rapid-fire bursts.")
       elseif info == false and bird_voice[main_bird].active == true then
-      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren_sin.png", 0, 8)
-      screen.move(65, 10)
-      screen.text_center("eurasian wren")
+        screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren_sin.png", 0, 8)
+        screen.move(65, 10)
+        screen.text_center("eurasian wren")
       else
         screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/wren1.png", 0,8)
         screen.move(65, 10)
