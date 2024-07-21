@@ -50,20 +50,20 @@ If you would like to add your own birds to the species, I suggest reading the [M
 
 ### controls
 
-- e1 changes the bird 
-- e2 mood AKA feistiness amount
-- e3 chirp volume
+- E1 changes the bird 
+- E2 mood AKA feistiness amount
+- E3 chirp volume
 
-- k1 is used as a combo key
-- k2 the bird sings
-- k3 triggers threshold recording / rec arm
-- k1+k2 toggle garden
-- k1+k3 toggle info
+- K1 is used as a combo key
+- K2 the bird sings
+- K3 triggers threshold recording / rec arm
+- K1+K2 toggle garden
+- K1+K3 toggle info
 
 
 ### recording
 
-Recording is done by exceeding the recording threshold or by pressing K3. When you press K3, a symbol shall appear on the right side of your screen »_(((_» - this shows that it is in rec arm mode. Once you exceed the threshold, it will grab a very short snippet of recorded material and throw it into the softcut rates. By default, the threshold is set to -18.0 db, but you can freely change it by visiting the params menu or changing it in the code.
+Recording is done by exceeding the recording threshold or by pressing K3. When you press K3, a symbol shall appear on the right side of your screen »_)))_» - this shows that it is in rec arm mode. Once you exceed the threshold, it will grab a very short snippet of recorded material and throw it into the softcut rates. By default, the threshold is set to -18.0 db, but you can freely change it by visiting the params menu or changing it in the code.
 
 ### singing and bird selection
 
@@ -169,19 +169,21 @@ _note: there is probably an easier way to transcribe these to rates and if you k
 There are some instructions in the birds.lua file that you can find in the lib folder. since, the current script is built around this method it is crucial to follow it in such a way. This might change in the future, however...
 
 ```
-1. add the <name> of your bird to the bird.names table.
+1. add the <name> of your bird to the bird.names table. this will be displayed in the script.
 
-2. create a table containing the birdsong parameters
+2. create a table containing the birdsong parameters and add the <key> to the bird.keys table.
 
-bird.<name> = {}
+bird.<key> = {}
 
-use the following template where,
+3. use the following template where,
+
+- i is the index of the birdsong
 - r is rate
 - d is duration
 - pb is pitchbend
 - ft is fade time
 
-bird.<name>[i] = {
+bird.<key>[i] = {
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
   {r = 0, d = 0.2, pb = 0, l = 0.5, ft = 0.2},   
