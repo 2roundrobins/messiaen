@@ -108,13 +108,13 @@ function play_birdsongs(bird_num, bird_tab)
       local level = current_note.l * bird_voice[bird_num].level * global_level
       softcut.rate_slew_time(bird_num, current_note.pb)
       softcut.rate(bird_num, rate)
-      softcut.level_slew_time(bird_num, current_note.ft)
+      softcut.level_slew_time(bird_num, current_note.ft + 0.2)
       softcut.level(bird_num, level)
       clock.sleep(current_note.d)
     end
     softcut.level(bird_num, 0)
     softcut.rate_slew_time(bird_num, 0)
-    softcut.level_slew_time(bird_num, 0)
+    softcut.level_slew_time(bird_num, 0.2)
     clock.sleep(math.random(1) + separation)
   end
 end
