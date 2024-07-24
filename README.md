@@ -7,7 +7,7 @@ single buffer delay / looper for mimicking birdsong
 [@fellowfinch](https://github.com/2roundrobins), [@sonocircuit](https://github.com/sonocircuit) with GUI illustrations [@mechtai.](https://github.com/mech-tai)
 
 
-## HARDWARE / INTALL
+## HARDWARE / INSTALL
 
 **required**
 
