@@ -805,7 +805,36 @@ function redraw()
         screen.move(65, 10)
         screen.text_center("eurasian wren")
       end
+  elseif bird_voice[main_bird].name == "eurasian oystercatcher" then
+    if info == true then
+      screen.clear()
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird_info.png", 0, 0)
+      screen.move(50,9)
+      screen.font_size(9)
+      screen.font_face(15)
+      screen.text("eurasian")
+      screen.move(50,21)
+      screen.text("oystercatcher")
+      screen.move(50,30)
+      screen.font_size(8)
+      screen.font_face(1)
+      screen.text("wading bird with")
+      screen.move(50,40)
+      screen.text("a striking black")
+      screen.move(0,50)
+      screen.text("and white plumage, and a")
+      screen.move(0,60)
+      screen.text("long red beak.")
+    elseif info == false and bird_voice[main_bird].active == true then
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird_sin.png", 8, 8)
+      screen.move(65, 10)
+      screen.text_center("eurasian oystercatcher")
+    elseif info == false then
+      screen.display_png(_path.code .. "/messiaen/assets/brd_pngs/blackbird1.png", 8, 8)
+      screen.move(65, 10)
+      screen.text_center("eurasian oystercatcher")
     end
+  end
   end
   screen.update()
 end

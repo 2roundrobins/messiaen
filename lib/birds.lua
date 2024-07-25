@@ -31,8 +31,8 @@ bird.<key>[i] = {
 
 
 -- these are the names and tab keys of the birds in order of apperance
-bird.names = {"wren", "robin", "blackbird", "chaffinch", "great tit", "green finch", "willow warbler"}
-bird.keys = {"wren", "robin", "blackbird", "chaffinch", "g_tit", "green_finch", "willow_warbler"}
+bird.names = {"wren", "robin", "blackbird", "chaffinch", "great tit", "green finch", "willow warbler", "eurasian oystercatcher"}
+bird.keys = {"wren", "robin", "blackbird", "chaffinch", "g_tit", "green_finch", "willow_warbler", "eu_oystercatcher"}
 
 --wren
 bird.wren = {}
@@ -1053,5 +1053,60 @@ bird.willow_warbler[3] = {
   {r = 0, d = 0.17, pb = 0, l = 0.0, ft = 0.2},   -- pause 
 }  
 
+bird.eu_oystercatcher = {}
+
+bird.eu_oystercatcher[1] = {
+  {r = 1, d = 0.15, pb = 0, l = 0.1, ft = 0.05},
+  {r = 6, d = 0.3, pb = 0, l = 0.5, ft = 0.05},
+  {r = 0, d = 0.1, pb = 0, l = 0, ft = 0.05},-- pause
+  {r = 1, d = 0.15, pb = 0, l = 0.1, ft = 0.05},
+  {r = 6, d = 0.3, pb = 0, l = 0.5, ft = 0.05},
+  {r = 0, d = 0.1, pb = 0, l = 0, ft = 0.05},-- pause
+  {r = 1, d = 0.15, pb = 0, l = 0.1, ft = 0.05},
+  {r = 6, d = 0.3, pb = 0, l = 0.5, ft = 0.05},
+  {r = 0, d = 0.1, pb = 0, l = 0, ft = 0.05},-- pause
+  {r = 1, d = 0.15, pb = 0, l = 0.1, ft = 0.05},
+  {r = 6, d = 0.3, pb = 0, l = 0.5, ft = 0.05},
+  {r = 0, d = 0.1, pb = 0, l = 0, ft = 0.05},-- pause
+  {r = 1, d = 0.15, pb = 0, l = 0.1, ft = 0.05},
+  {r = 6, d = 0.3, pb = 0, l = 0.5, ft = 0.05},
+  {r = 0, d = 0.1, pb = 0, l = 0, ft = 0.05} -- pause
+  }
+
+  bird.eu_oystercatcher[2] = {
+    {r = 6, d = 1, pb = 0, l = 0.8, ft = 0.2}
+    }
+
+  bird.eu_oystercatcher[3] = {
+      {r = 6, d = 0.1, pb = 0, l = 0.5, ft = 0.02},
+      {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+      {r = 6, d = 0.1, pb = 0, l = 0.5, ft = 0.02},
+      {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+      {r = 6, d = 0.1, pb = 0, l = 0.5, ft = 0.02},
+      {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+      {r = 6, d = 0.1, pb = 0, l = 0.5, ft = 0.02},
+      {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+      {r = 6, d = 0.1, pb = 0, l = 0.5, ft = 0.02},
+      {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+      {r = 6, d = 0.1, pb = 0, l = 0.5, ft = 0.02},
+      {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+      {r = 6, d = 0.1, pb = 0, l = 0.5, ft = 0.02},
+      {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+      {r = 6, d = 0.1, pb = 0, l = 0.5, ft = 0.02},
+      {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02} -- pause
+      }
+
+      bird.eu_oystercatcher[4] = {
+        {r = 6, d = 0.5, pb = 0, l = 0.6, ft = 0.02},
+        {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+        {r = 1, d = 0.1, pb = 0, l = 0.2, ft = 0.02},
+        {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+        {r = 1, d = 0.1, pb = 0, l = 0.2, ft = 0.02},
+        {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+        {r = 1, d = 0.1, pb = 0, l = 0.2, ft = 0.02},
+        {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02}, -- pause
+        {r = 1, d = 0.1, pb = 0, l = 0.2, ft = 0.02},
+        {r = 0, d = 0.05, pb = 0, l = 0, ft = 0.02} -- pause
+        }
 
 return bird
